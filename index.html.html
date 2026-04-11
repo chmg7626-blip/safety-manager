@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>건설현장 안전관리 시스템</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --g:#16a36a;--g2:#0d7a4e;--g3:#e8f8f1;--g4:#b8edd8;
+  --red:#e03e3e;--red-bg:#fff0f0;--amber:#d97706;--amber-bg:#fffbeb;
+  --blue:#1d6fa4;--blue-bg:#eff6ff;
+  --bg:#f5f6f8;--card:#ffffff;--border:#e2e5ea;
+  --text:#1a1f2e;--muted:#6b7280;--light:#9ca3af;
+  --radius:10px;--radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── SETUP SCREEN ── */
+.setup-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0f1923 0%,#1a2d3f 60%,#0d7a4e 100%);padding:20px}
+.setup-box{background:#fff;border-radius:20px;padding:36px;width:100%;max-width:480px}
+.setup-box .setup-logo{text-align:center;margin-bottom:24px}
+.setup-box .mark{width:52px;height:52px;background:var(--g);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:10px}
+.setup-box h2{font-size:18px;font-weight:700}
+.setup-box p{font-size:12px;color:var(--muted);margin-top:4px}
+.setup-step{background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;font-size:12px;color:#1e3a5f;line-height:1.8}
+.setup-step b{font-size:13px;display:block;margin-bottom:4px;color:var(--blue)}
+.setup-step code{background:#dbeafe;padding:2px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.ff{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.ff label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ff input{padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);transition:border-color .15s}
+.ff input:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(22,163,106,.1)}
+.ff input::placeholder{color:var(--light)}
+.btn-setup{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn-setup:hover{background:var(--g2)}
+.setup-err{background:var(--red-bg);border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:12px;display:none}
+.setup-ok{background:var(--g3);border:1px solid var(--g4);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--g2);margin-bottom:12px;display:none}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0f1923 0%,#1a2d3f 60%,#0d7a4e 100%);padding:20px}
+.login-screen.show{display:flex}
+.login-box{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .mark{width:56px;height:56px;background:var(--g);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px}
+.login-logo h1{font-size:20px;font-weight:700}
+.login-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.login-tabs{display:flex;border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;margin-bottom:24px}
+.login-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:var(--muted);border:none;font-family:inherit;transition:all .15s}
+.login-tab.active{background:var(--g);color:#fff}
+.form-field{margin-bottom:14px}
+.form-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.form-field input,.form-field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;color:var(--text);transition:border-color .15s;background:#fff}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(22,163,106,.1)}
+.btn-login{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn-login:hover{background:var(--g2)}
+.login-err{background:var(--red-bg);border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:14px;display:none}
+.login-info{background:var(--g3);border:1px solid var(--g4);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--g2);margin-top:16px;line-height:1.7}
+
+/* ── APP ── */
+.app{display:none}
+.app.show{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:230px;background:#0f1923;color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .logo-mark{width:36px;height:36px;background:var(--g);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.sidebar-logo h1{font-size:13px;font-weight:700;line-height:1.4}
+.user-card{margin:12px 12px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px}
+.user-card .uc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.user-card .uc-name{font-size:13px;font-weight:700;color:#fff}
+.user-card .uc-role{font-size:11px;color:rgba(255,255,255,.45);margin-top:1px}
+.user-card .uc-site{font-size:11px;color:#6ee7b7;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)}
+.btn-logout{width:100%;margin-top:8px;padding:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-logout:hover{background:rgba(224,62,62,.2);border-color:rgba(224,62,62,.4);color:#fca5a5}
+.nav{flex:1;padding:8px 10px;overflow-y:auto}
+.nav-section{font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 8px 6px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:none;color:rgba(255,255,255,.65);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;text-align:left;transition:all .15s}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-btn.active{background:var(--g);color:#fff;font-weight:500}
+.nav-btn .icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.nav-btn .bcnt{margin-left:auto;background:rgba(255,255,255,.15);font-size:10px;font-family:'IBM Plex Mono',monospace;padding:1px 7px;border-radius:20px}
+.nav-btn.active .bcnt{background:rgba(255,255,255,.25)}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:rgba(255,255,255,.2);line-height:1.6}
+
+/* ── MAIN ── */
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-left h2{font-size:16px;font-weight:700}
+.topbar-left p{font-size:12px;color:var(--muted);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--text);padding:2px}
+.today-badge{background:var(--g3);color:var(--g2);border:1px solid var(--g4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.sync-badge{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid;font-weight:500}
+.sync-badge.ok{background:var(--g3);color:var(--g2);border-color:var(--g4)}
+.sync-badge.saving{background:var(--amber-bg);color:var(--amber);border-color:#fcd34d}
+.sync-badge.err{background:var(--red-bg);color:var(--red);border-color:#fca5a5}
+.content{padding:24px 28px;flex:1}
+
+/* ── PANELS ── */
+.panel{display:none}.panel.on{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.card-head h3{font-size:14px;font-weight:700}
+.card-head .sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── FORM ── */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:500;color:var(--muted)}
+.fg input,.fg select,.fg textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:#fff;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(22,163,106,.1)}
+.fg textarea{resize:vertical;min-height:72px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.span2{grid-column:span 2}.span3{grid-column:span 3}.span4{grid-column:1/-1}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--g);color:var(--g);background:var(--g3)}
+.btn-primary{background:var(--g);color:#fff;border-color:var(--g)}
+.btn-primary:hover{background:var(--g2);border-color:var(--g2);color:#fff}
+.btn-pdf{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+.btn-pdf:hover{background:#162c47;color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:#fca5a5}
+.btn-danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* ── ALERTS ── */
+.alert{border-radius:var(--radius);padding:12px 16px;font-size:12px;line-height:1.7;margin-bottom:16px;border-left:4px solid}
+.alert-red{background:var(--red-bg);border-color:var(--red);color:#991b1b}
+.alert-amber{background:var(--amber-bg);border-color:var(--amber);color:#92400e}
+.alert-green{background:var(--g3);border-color:var(--g);color:var(--g2)}
+.alert-blue{background:var(--blue-bg);border-color:var(--blue);color:#1e3a5f}
+.alert b{font-weight:700}
+
+/* ── STATS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.green::before{background:var(--g)}.stat-card.amber::before{background:var(--amber)}
+.stat-card.blue::before{background:var(--blue)}.stat-card.red::before{background:var(--red)}
+.stat-card .s-num{font-size:30px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text);line-height:1}
+.stat-card .s-lbl{font-size:12px;color:var(--muted);margin-top:6px}
+.stat-card .s-icon{font-size:28px;position:absolute;right:16px;top:16px;opacity:.12}
+
+/* ── QUICK ── */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.quick-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:6px}
+.quick-card:hover{border-color:var(--g);box-shadow:0 4px 16px rgba(22,163,106,.12);transform:translateY(-1px)}
+.quick-card .qc-icon{font-size:22px}
+.quick-card h4{font-size:13px;font-weight:700}
+.quick-card p{font-size:11px;color:var(--muted);line-height:1.5}
+.quick-card .qc-arrow{color:var(--g);font-size:18px;margin-top:auto}
+
+/* ── CHECKLIST ── */
+.check-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:7px}
+.chk{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;color:var(--text);transition:all .12s;user-select:none}
+.chk input{accent-color:var(--g);width:15px;height:15px;flex-shrink:0}
+.chk.on{background:var(--g3);border-color:var(--g);color:var(--g2);font-weight:500}
+
+/* ── SIGNERS ── */
+.signer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.signer{border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;background:#fafafa}
+.signer .s-num{font-size:10px;color:var(--light);margin-bottom:6px;font-family:'IBM Plex Mono',monospace}
+.signer input{width:100%;border:none;border-bottom:1px solid var(--border);background:none;font-size:12px;font-family:inherit;color:var(--text);padding:3px 0;margin-bottom:4px;outline:none}
+.signer input:focus{border-color:var(--g)}
+.signer .sign-area{margin-top:8px;border-top:1px solid var(--border);padding-top:4px;height:30px;font-size:10px;color:var(--light)}
+
+/* ── RISK TABLE ── */
+.risk-scroll{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+.risk-table{width:100%;border-collapse:collapse;font-size:12px;min-width:750px}
+.risk-table th{background:#f8f9fb;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.risk-table td{padding:7px 8px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+.risk-table tr:last-child td{border-bottom:none}
+.risk-table tr:hover td{background:#fafbfd}
+.risk-table input,.risk-table select{width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;color:var(--text);background:#fff}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-low{background:#dcfce7;color:#166534}
+.badge-mid{background:#fef9c3;color:#713f12}
+.badge-high{background:#fee2e2;color:#991b1b}
+
+/* ── SITE STRIP ── */
+.site-strip{background:linear-gradient(135deg,#0f1923 0%,#1a2d3f 100%);color:#fff;border-radius:var(--radius-lg);padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.site-strip .ss-name{font-size:15px;font-weight:700;color:#6ee7b7}
+.site-strip .ss-meta{font-size:11px;color:rgba(255,255,255,.55);display:flex;gap:16px;flex-wrap:wrap}
+.site-strip .ss-meta span::before{content:'· ';color:var(--g4)}
+
+/* ── PDF HINT ── */
+.pdf-hint{background:#1e3a5f;color:#fff;border-radius:var(--radius);padding:10px 14px;font-size:12px;display:flex;align-items:center;gap:10px;margin-top:12px}
+
+/* ── LAW ── */
+.law-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.law-item{background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:var(--radius);padding:12px 14px;font-size:11px;color:#1e3a5f;line-height:1.6}
+.law-item b{font-size:12px;display:block;margin-bottom:2px}
+.section-divider{display:flex;align-items:center;gap:10px;margin:20px 0 14px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── LOADING ── */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.spinner{width:36px;height:36px;border:3px solid var(--g4);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--muted)}
+
+/* ── OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.overlay.show{display:block}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:440px}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.modal .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}.menu-toggle{display:block}.overlay.show{display:block}
+  .stat-grid,.quick-grid{grid-template-columns:1fr 1fr}
+  .law-grid{grid-template-columns:1fr 1fr}
+  .grid4{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .span3,.span4{grid-column:1/-1}
+  .content{padding:16px}.topbar{padding:12px 16px}
+}
+@media(max-width:560px){
+  .stat-grid,.quick-grid,.law-grid,.grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .span2{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN (최초 1회) ══ -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-box">
+    <div class="setup-logo">
+      <div class="mark">🦺</div>
+      <h2>초기 설정</h2>
+      <p>Supabase 연결 정보를 입력하세요 (최초 1회)</p>
+    </div>
+
+    <div class="setup-step">
+      <b>① Supabase 프로젝트 만들기</b>
+      <a href="https://supabase.com" target="_blank" style="color:var(--blue)">supabase.com</a> → 무료 가입 → New Project 생성
+    </div>
+    <div class="setup-step">
+      <b>② Project URL & API Key 복사</b>
+      프로젝트 대시보드 → <code>Settings → API</code> →<br>
+      <code>Project URL</code> 과 <code>anon public</code> 키 복사
+    </div>
+    <div class="setup-step">
+      <b>③ 아래 SQL 실행 (Table Editor → SQL Editor)</b>
+      <code>배포 가이드 문서의 SQL 코드 붙여넣기 후 Run</code>
+    </div>
+
+    <div id="setup-err" class="setup-err"></div>
+    <div id="setup-ok" class="setup-ok"></div>
+
+    <div class="ff">
+      <label>Supabase Project URL</label>
+      <input type="url" id="cfg-url" placeholder="https://xxxxxxxxxxx.supabase.co">
+    </div>
+    <div class="ff">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    </div>
+    <button class="btn-setup" onclick="saveConfig()">연결 테스트 및 저장</button>
+  </div>
+</div>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="mark">🦺</div>
+      <h1>건설현장 안전관리 시스템</h1>
+      <p>현장별 안전서류 작성 · PDF 출력 플랫폼</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('login')">로그인</button>
+      <button class="login-tab" onclick="switchTab('register')">계정 만들기</button>
+    </div>
+    <div id="login-err" class="login-err"></div>
+
+    <div id="form-login">
+      <div class="form-field"><label>이메일</label><input type="email" id="l-email" placeholder="email@example.com" autocomplete="email"></div>
+      <div class="form-field"><label>비밀번호</label><input type="password" id="l-pw" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-login" onclick="doLogin()">로그인</button>
+    </div>
+
+    <div id="form-register" style="display:none">
+      <div class="form-field"><label>이름 (실명)</label><input type="text" id="r-name" placeholder="홍길동"></div>
+      <div class="form-field"><label>이메일</label><input type="email" id="r-email" placeholder="email@example.com"></div>
+      <div class="form-field"><label>비밀번호</label><input type="password" id="r-pw" placeholder="6자 이상"></div>
+      <div class="form-field"><label>직책</label><input type="text" id="r-role" placeholder="안전관리자 / 현장소장"></div>
+      <button class="btn-login" onclick="doRegister()">계정 만들기</button>
+    </div>
+
+    <div class="login-info">
+      💡 계정별로 현장정보가 독립 저장됩니다.<br>
+      어떤 기기에서 로그인해도 내 데이터가 불러와집니다.
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="app" id="app">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">저장 중...</div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">🦺</div>
+      <h1>건설현장<br>안전관리 시스템</h1>
+    </div>
+    <div class="user-card">
+      <div class="uc-top">
+        <div class="user-avatar" id="sb-avatar">?</div>
+        <div>
+          <div class="uc-name" id="sb-name">-</div>
+          <div class="uc-role" id="sb-role">-</div>
+        </div>
+      </div>
+      <div class="uc-site" id="sb-site">현장명 미설정</div>
+      <button class="btn-logout" onclick="doLogout()">🚪 로그아웃</button>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">메인</div>
+      <button class="nav-btn active" onclick="go('home',this)"><span class="icon">🏠</span> 홈 / 현장정보</button>
+      <div class="nav-section">서류 작성</div>
+      <button class="nav-btn" onclick="go('tbm',this)"><span class="icon">📋</span> TBM 일지<span class="bcnt" id="cnt-tbm-sb">0</span></button>
+      <button class="nav-btn" onclick="go('risk',this)"><span class="icon">⚠️</span> 위험성평가서<span class="bcnt" id="cnt-risk-sb">0</span></button>
+      <button class="nav-btn" onclick="go('edu',this)"><span class="icon">🎓</span> 안전교육 기록부<span class="bcnt" id="cnt-edu-sb">0</span></button>
+      <button class="nav-btn" onclick="go('permit',this)"><span class="icon">✅</span> 작업허가서<span class="bcnt" id="cnt-permit-sb">0</span></button>
+      <button class="nav-btn" onclick="go('accident',this)"><span class="icon">🚨</span> 사고보고서<span class="bcnt" id="cnt-acc-sb">0</span></button>
+      <div class="nav-section">참고</div>
+      <button class="nav-btn" onclick="go('law',this)"><span class="icon">📚</span> 법령 빠른참조</button>
+    </nav>
+    <div class="sidebar-footer">산업안전보건법 · 중대재해처벌법<br>건설기술진흥법 준거</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <div>
+          <h2 id="topbar-title">홈</h2>
+          <p id="topbar-sub">현장정보를 입력하고 서류를 작성하세요</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="sync-badge ok" id="sync-badge">☁️ 클라우드 저장</span>
+        <span class="today-badge" id="topbar-date"></span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- HOME -->
+      <div class="panel on" id="panel-home">
+        <div class="stat-grid">
+          <div class="stat-card green"><div class="s-icon">📋</div><div class="s-num" id="st-tbm">0</div><div class="s-lbl">TBM 출력</div></div>
+          <div class="stat-card amber"><div class="s-icon">⚠️</div><div class="s-num" id="st-risk">0</div><div class="s-lbl">위험성평가</div></div>
+          <div class="stat-card blue"><div class="s-icon">🎓</div><div class="s-num" id="st-edu">0</div><div class="s-lbl">안전교육</div></div>
+          <div class="stat-card red"><div class="s-icon">🗂️</div><div class="s-num" id="st-all">0</div><div class="s-lbl">총 출력건수</div></div>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-card" onclick="goTo('tbm')"><div class="qc-icon">📋</div><h4>TBM 일지</h4><p>작업 전 안전점검 회의 기록</p><div class="qc-arrow">→</div></div>
+          <div class="quick-card" onclick="goTo('risk')"><div class="qc-icon">⚠️</div><h4>위험성평가서</h4><p>빈도×강도 자동계산, 위험등급</p><div class="qc-arrow">→</div></div>
+          <div class="quick-card" onclick="goTo('edu')"><div class="qc-icon">🎓</div><h4>안전교육 기록부</h4><p>정기·채용·특별교육 기록</p><div class="qc-arrow">→</div></div>
+          <div class="quick-card" onclick="goTo('permit')"><div class="qc-icon">✅</div><h4>작업허가서</h4><p>화기·밀폐·고소 위험작업 허가</p><div class="qc-arrow">→</div></div>
+          <div class="quick-card" onclick="goTo('accident')"><div class="qc-icon">🚨</div><h4>사고보고서</h4><p>재해 조사표, 원인분석</p><div class="qc-arrow">→</div></div>
+          <div class="quick-card" onclick="goTo('law')"><div class="qc-icon">📚</div><h4>법령 빠른참조</h4><p>산안법·중처법·건진법</p><div class="qc-arrow">→</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3>내 현장 기본정보</h3><div class="sub">☁️ 저장하면 클라우드에 동기화 — 어떤 기기에서든 불러올 수 있습니다</div></div></div>
+          <div class="grid3">
+            <div class="fg"><label>현장명 *</label><input id="si-name" placeholder="○○ 신축공사 현장"></div>
+            <div class="fg"><label>안전관리자 *</label><input id="si-mgr" placeholder="홍길동"></div>
+            <div class="fg"><label>현장소장</label><input id="si-dir" placeholder="김현장"></div>
+            <div class="fg"><label>발주처</label><input id="si-owner" placeholder="○○공사"></div>
+            <div class="fg"><label>공사금액 (억원)</label><input id="si-cost" type="number" placeholder="120"></div>
+            <div class="fg"><label>공사기간</label><input id="si-period" placeholder="2025.01 ~ 2026.12"></div>
+            <div class="fg span3"><label>현장 주소</label><input id="si-addr" placeholder="서울특별시 ○○구 ○○동 123번지"></div>
+            <div class="fg"><label>비상연락처</label><input id="si-tel" placeholder="010-0000-0000"></div>
+            <div class="fg"><label>관할 노동지청</label><input id="si-office" placeholder="○○지방고용노동청"></div>
+            <div class="fg"><label>주요 협력업체</label><input id="si-sub" placeholder="○○건설, ○○전기"></div>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="saveSite()">💾 현장정보 저장 (클라우드)</button></div>
+        </div>
+        <div class="alert alert-red"><b>⚡ 중대재해 즉시 신고 (산안법 제54조)</b><br>사망 또는 3일 이상 휴업 재해 → <b>즉시</b> 관할 지방고용노동관서 신고 / 산업재해 조사표 <b>1개월 내</b> 제출</div>
+      </div>
+
+      <!-- TBM -->
+      <div class="panel" id="panel-tbm">
+        <div class="site-strip" id="ss-tbm"></div>
+        <div class="card">
+          <div class="card-head"><h3>📋 TBM (Tool Box Meeting) 일지</h3></div>
+          <div class="grid4">
+            <div class="fg"><label>작성일자</label><input type="date" id="t-date"></div>
+            <div class="fg"><label>작업팀/공종</label><input id="t-team" placeholder="철근콘크리트공"></div>
+            <div class="fg"><label>작업장소</label><input id="t-loc" placeholder="3층 슬래브"></div>
+            <div class="fg"><label>참석인원 (명)</label><input type="number" id="t-cnt" placeholder="12"></div>
+            <div class="fg"><label>진행자</label><input id="t-leader" placeholder="김관리"></div>
+            <div class="fg"><label>날씨</label><select id="t-weather"><option>맑음</option><option>흐림</option><option>비</option><option>눈</option><option>강풍</option><option>안개</option><option>폭염</option></select></div>
+            <div class="fg"><label>기온 (°C)</label><input id="t-temp" placeholder="20"></div>
+            <div class="fg"><label>작업시간</label><input id="t-time" placeholder="08:00 ~ 17:00"></div>
+            <div class="fg span4"><label>금일 주요 작업</label><textarea id="t-work" placeholder="예) 3층 슬래브 콘크리트 타설 (약 120㎥)"></textarea></div>
+            <div class="fg span4"><label>주요 위험요인</label><textarea id="t-hazard" placeholder="예) 거푸집 붕괴, 콘크리트 비산, 추락"></textarea></div>
+            <div class="fg span4"><label>안전대책 및 당부사항</label><textarea id="t-measure" placeholder="예) 안전대 착용 철저, 작업반경 출입통제, 신호수 배치"></textarea></div>
+            <div class="fg span4"><label>특이사항</label><textarea id="t-note" placeholder="예) 오후 고용노동부 점검 예정"></textarea></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><h3>안전수칙 체크리스트</h3></div><div class="check-wrap" id="tbm-checks"></div></div>
+        <div class="card"><div class="card-head"><h3>참석자 서명란</h3><button class="btn btn-sm" onclick="addSigner('tbm-signers','참석자')">+ 추가</button></div><div class="signer-grid" id="tbm-signers"></div></div>
+        <div class="btn-row"><button class="btn btn-pdf" onclick="pdfTBM()">🖨️ PDF 출력</button><button class="btn" onclick="clearForm('tbm')">↺ 초기화</button></div>
+        <div class="pdf-hint">💡 출력창에서 <b>대상: PDF로 저장</b> 선택 → 파일로 저장</div>
+      </div>
+
+      <!-- RISK -->
+      <div class="panel" id="panel-risk">
+        <div class="site-strip" id="ss-risk"></div>
+        <div class="card">
+          <div class="card-head"><h3>⚠️ 위험성평가서</h3></div>
+          <div class="grid4">
+            <div class="fg"><label>평가일자</label><input type="date" id="r-date"></div>
+            <div class="fg"><label>평가구분</label><select id="r-type"><option>최초평가</option><option>수시평가</option><option>정기평가 (연 1회)</option></select></div>
+            <div class="fg"><label>공종/작업명</label><input id="r-work" placeholder="고소작업 / 외부비계 설치"></div>
+            <div class="fg"><label>평가자</label><input id="r-eval" placeholder="홍길동"></div>
+            <div class="fg span4"><label>작업 개요</label><textarea id="r-overview" placeholder="작업 내용, 범위, 사용 장비 등 기술"></textarea></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3>위험요인 목록</h3><div class="sub">빈도 × 강도 = 위험도 (자동계산)</div></div><button class="btn btn-sm" onclick="addRiskRow()">+ 항목 추가</button></div>
+          <div class="risk-scroll">
+            <table class="risk-table">
+              <thead><tr><th style="width:36px">No.</th><th style="min-width:100px">작업단계</th><th style="min-width:120px">위험요인</th><th style="min-width:90px">잠재적피해</th><th style="width:60px">빈도(1-5)</th><th style="width:60px">강도(1-5)</th><th style="width:55px">위험도</th><th style="width:60px">등급</th><th style="min-width:150px">개선대책</th><th style="min-width:80px">담당자</th><th style="width:36px"></th></tr></thead>
+              <tbody id="risk-tbody"></tbody>
+            </table>
+          </div>
+          <div class="alert alert-amber" style="margin-top:12px;margin-bottom:0">낮음(1~4): 현 수준 유지 &nbsp;|&nbsp; 중간(5~9): 개선계획 수립 &nbsp;|&nbsp; 높음(10~25): 즉시 개선 또는 작업 중지</div>
+        </div>
+        <div class="card"><div class="card-head"><h3>검토 및 승인</h3></div><div class="grid3"><div class="fg"><label>작성자</label><input id="r-author" placeholder="안전관리자"></div><div class="fg"><label>검토자</label><input id="r-reviewer" placeholder="현장소장"></div><div class="fg"><label>승인자</label><input id="r-approver" placeholder="안전보건관리책임자"></div></div></div>
+        <div class="btn-row"><button class="btn btn-pdf" onclick="pdfRisk()">🖨️ PDF 출력</button><button class="btn" onclick="addRiskRow()">+ 항목 추가</button><button class="btn" onclick="clearForm('risk')">↺ 초기화</button></div>
+        <div class="pdf-hint">💡 출력창에서 <b>대상: PDF로 저장</b> 선택 → 파일로 저장</div>
+      </div>
+
+      <!-- EDU -->
+      <div class="panel" id="panel-edu">
+        <div class="site-strip" id="ss-edu"></div>
+        <div class="alert alert-green"><b>📌 법정 교육시간 (산안법 시행규칙 제26조)</b><br>근로자 정기: 매분기 6h↑ &nbsp;|&nbsp; 관리감독자: 연 16h↑ &nbsp;|&nbsp; 채용 시: 8h↑ &nbsp;|&nbsp; 작업변경: 2h↑ &nbsp;|&nbsp; 특별안전: 16h↑</div>
+        <div class="card">
+          <div class="card-head"><h3>🎓 안전보건교육 실시 기록부</h3></div>
+          <div class="grid4">
+            <div class="fg"><label>교육일자</label><input type="date" id="e-date"></div>
+            <div class="fg"><label>교육구분</label><select id="e-type"><option>정기교육 (근로자)</option><option>정기교육 (관리감독자)</option><option>채용 시 교육</option><option>작업내용 변경 시</option><option>특별안전교육</option><option>건설업 기초안전교육</option></select></div>
+            <div class="fg"><label>교육장소</label><input id="e-place" placeholder="현장 회의실"></div>
+            <div class="fg"><label>교육시간 (h)</label><input type="number" id="e-hours" placeholder="2"></div>
+            <div class="fg"><label>강사명</label><input id="e-trainer" placeholder="안전관리자 / 외부강사"></div>
+            <div class="fg"><label>참석인원 (명)</label><input type="number" id="e-cnt" placeholder="20"></div>
+            <div class="fg"><label>교육형태</label><select id="e-method"><option>집합교육</option><option>현장교육</option><option>온라인교육</option><option>외부위탁</option></select></div>
+            <div class="fg"><label>법적근거</label><input id="e-law" value="산업안전보건법 제29조, 시행규칙 제26조"></div>
+            <div class="fg span4"><label>교육 내용</label><textarea id="e-content" placeholder="1. 추락재해 예방 및 안전대 착용&#10;2. 개인보호구 착용법&#10;3. 위험성평가 참여 방법"></textarea></div>
+            <div class="fg span4"><label>특이사항</label><input id="e-note" placeholder="예) 신규 투입자 대상 / 외국인 근로자 통역 진행"></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><h3>교육 참석자 명단</h3><button class="btn btn-sm" onclick="addSigner('edu-signers','교육생')">+ 추가</button></div><div class="signer-grid" id="edu-signers"></div></div>
+        <div class="btn-row"><button class="btn btn-pdf" onclick="pdfEdu()">🖨️ PDF 출력</button><button class="btn" onclick="clearForm('edu')">↺ 초기화</button></div>
+        <div class="pdf-hint">💡 출력창에서 <b>대상: PDF로 저장</b> 선택 → 파일로 저장</div>
+      </div>
+
+      <!-- PERMIT -->
+      <div class="panel" id="panel-permit">
+        <div class="site-strip" id="ss-permit"></div>
+        <div class="alert alert-amber"><b>⚠️ 작업허가서 필수</b>: 화기작업, 밀폐공간, 고소(2m↑), 굴착, 크레인 인양, 전기작업, 해체작업</div>
+        <div class="card">
+          <div class="card-head"><h3>✅ 작업허가서 (Permit to Work)</h3></div>
+          <div class="grid4">
+            <div class="fg"><label>허가일자</label><input type="date" id="p-date"></div>
+            <div class="fg"><label>작업유형</label><select id="p-type"><option>화기작업</option><option>밀폐공간 작업</option><option>고소작업 (2m 이상)</option><option>굴착작업</option><option>크레인 인양</option><option>전기작업</option><option>해체작업</option><option>기타 위험작업</option></select></div>
+            <div class="fg"><label>작업장소</label><input id="p-loc" placeholder="B2 지하주차장 용접"></div>
+            <div class="fg"><label>작업시간</label><input id="p-time" placeholder="09:00 ~ 18:00"></div>
+            <div class="fg"><label>작업책임자</label><input id="p-leader" placeholder="협력업체 반장명"></div>
+            <div class="fg"><label>인원 (명)</label><input type="number" id="p-cnt" placeholder="5"></div>
+            <div class="fg"><label>승인자</label><input id="p-approver" placeholder="안전관리자명"></div>
+            <div class="fg"><label>허가번호</label><input id="p-num" placeholder="PTW-2025-001"></div>
+            <div class="fg span4"><label>작업 내용</label><textarea id="p-work"></textarea></div>
+            <div class="fg span4"><label>주요 위험요인</label><textarea id="p-hazard"></textarea></div>
+            <div class="fg span4"><label>안전조치 사항</label><textarea id="p-safety"></textarea></div>
+            <div class="fg span4"><label>비상연락망</label><input id="p-emergency" placeholder="안전관리자: 010-xxxx / 119 / ○○병원"></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><h3>작업 전 안전조치 체크리스트</h3></div><div class="check-wrap" id="permit-checks"></div></div>
+        <div class="btn-row"><button class="btn btn-pdf" onclick="pdfPermit()">🖨️ PDF 출력</button><button class="btn" onclick="clearForm('permit')">↺ 초기화</button></div>
+        <div class="pdf-hint">💡 출력창에서 <b>대상: PDF로 저장</b> 선택 → 파일로 저장</div>
+      </div>
+
+      <!-- ACCIDENT -->
+      <div class="panel" id="panel-accident">
+        <div class="site-strip" id="ss-accident"></div>
+        <div class="alert alert-red"><b>🚨 즉시 신고 (산안법 제54조)</b> — 사망·3일 이상 휴업 재해 → <b>즉시</b> 관할 지방고용노동관서 신고 / 조사표 <b>1개월 내</b> 제출</div>
+        <div class="card">
+          <div class="card-head"><h3>🚨 산업재해 조사표</h3></div>
+          <div class="grid4">
+            <div class="fg"><label>발생일시</label><input type="datetime-local" id="a-dt"></div>
+            <div class="fg"><label>재해구분</label><select id="a-type"><option>사망</option><option>부상 (3일 이상 휴업)</option><option>부상 (3일 미만)</option><option>직업병</option><option>아차사고</option></select></div>
+            <div class="fg"><label>재해자 성명</label><input id="a-name" placeholder="홍길동"></div>
+            <div class="fg"><label>소속</label><input id="a-company" placeholder="○○협력업체"></div>
+            <div class="fg"><label>직종</label><input id="a-job" placeholder="형틀목수"></div>
+            <div class="fg"><label>경력 (년)</label><input type="number" id="a-career" placeholder="3"></div>
+            <div class="fg"><label>발생장소</label><input id="a-loc" placeholder="3층 거푸집 해체 구역"></div>
+            <div class="fg"><label>재해유형</label><select id="a-category"><option>추락</option><option>낙하·비래</option><option>붕괴·도괴</option><option>협착</option><option>충돌</option><option>감전</option><option>화재·폭발</option><option>질식</option><option>기타</option></select></div>
+            <div class="fg span2"><label>부상 부위/정도</label><input id="a-injury" placeholder="우측 손목 골절, 3주 진단"></div>
+            <div class="fg span2"><label>병원 이송</label><input id="a-hospital" placeholder="○○병원 응급실 이송"></div>
+            <div class="fg span4"><label>재해 발생 경위</label><textarea id="a-desc" style="min-height:90px" placeholder="육하원칙으로 상세 기술"></textarea></div>
+            <div class="fg span2"><label>직접 원인</label><textarea id="a-direct" placeholder="안전대 미착용, 안전난간 미설치 등"></textarea></div>
+            <div class="fg span2"><label>간접 원인</label><textarea id="a-indirect" placeholder="안전교육 미실시, 감독 소홀 등"></textarea></div>
+            <div class="fg span4"><label>재발방지 대책</label><textarea id="a-prevent"></textarea></div>
+          </div>
+        </div>
+        <div class="btn-row"><button class="btn btn-pdf" onclick="pdfAccident()">🖨️ PDF 출력</button><button class="btn" onclick="clearForm('accident')">↺ 초기화</button></div>
+        <div class="pdf-hint">💡 출력창에서 <b>대상: PDF로 저장</b> 선택 → 파일로 저장</div>
+      </div>
+
+      <!-- LAW -->
+      <div class="panel" id="panel-law">
+        <div class="card">
+          <div class="card-head"><h3>📚 관련 법령 빠른참조</h3></div>
+          <div class="section-divider">산업안전보건법</div>
+          <div class="law-grid" style="margin-bottom:16px">
+            <div class="law-item"><b>제17조 — 안전관리자 선임</b>공사금액 50억↑ 선임 의무. 120억↑ 전담. 14일 내 보고</div>
+            <div class="law-item"><b>제29조 — 안전보건교육</b>근로자·관리감독자 정기, 채용 시, 작업변경, 특별교육</div>
+            <div class="law-item"><b>제36조 — 위험성평가</b>최초·수시·정기 실시. 근로자 참여 필수. 결과 3년 보존</div>
+            <div class="law-item"><b>제54조 — 중대재해 보고</b>사망·3일↑ 재해 즉시 신고. 조사표 1개월 내 제출</div>
+            <div class="law-item"><b>제63조 — 도급인 안전조치</b>수급인 근로자 안전조치 의무. 합동안전점검</div>
+            <div class="law-item"><b>제72조 — 기초안전교육</b>건설 일용근로자 채용 시 4시간 이수 확인</div>
+          </div>
+          <div class="section-divider">중대재해처벌법</div>
+          <div class="law-grid" style="margin-bottom:16px">
+            <div class="law-item"><b>제4조 — 경영책임자 의무</b>안전보건관리체계 구축·이행. 재해예방 예산 편성</div>
+            <div class="law-item"><b>제6조 — 처벌기준</b>사망 시 1년↑ 징역 / 10억↓ 벌금. 법인 50억↓ 벌금</div>
+            <div class="law-item"><b>제5조 — 도급 의무</b>도급·용역·위탁 시 수급인 안전보건 확보 의무</div>
+          </div>
+          <div class="section-divider">건설기술진흥법</div>
+          <div class="law-grid">
+            <div class="law-item"><b>제62조 — 안전관리계획</b>1종 시설물·지하 10m↑ 굴착공사 안전관리계획 수립</div>
+            <div class="law-item"><b>제63조 — 안전점검</b>정기·정밀 안전점검. 결과보고서 제출</div>
+            <div class="law-item"><b>제67조 — 사고보고</b>건설공사 중 사고 발생 시 발주청 즉시 보고</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════
+   SUPABASE CONFIG
+   ★ 여기에 본인 프로젝트 정보를 입력하세요 ★
+   ════════════════════════ */
+const SUPABASE_URL = 'https://adkfjemtkwhzvoorhlom.supabase.co';   // 예: 'https://abcdefgh.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFka2ZqZW10a3doenZvb3JobG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzI2ODIsImV4cCI6MjA5MTQ0ODY4Mn0.JTfnJeBHdMia0PKhVzoYR7_W-M7bHlb25sDrkdkRHIs'; // 예: 'eyJhbGci...'
+
+const CFG_KEY = 'sb_config_v1';
+let sb = null;
+let currentUser = null;
+let userProfile = null;
+let siteData = null;
+
+function getSavedConfig() {
+  // 하드코딩된 값이 있으면 우선 사용
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+    return { url: SUPABASE_URL, key: SUPABASE_KEY };
+  }
+  try { return JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); } catch(e) { return null; }
+}
+
+async function initSupabase(url, key) {
+  sb = window.supabase.createClient(url, key);
+  return sb;
+}
+
+async function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  const err = document.getElementById('setup-err');
+  const ok = document.getElementById('setup-ok');
+  err.style.display='none'; ok.style.display='none';
+  if(!url || !key) { showSetupErr('URL과 API Key를 모두 입력하세요'); return; }
+  if(!url.startsWith('https://')) { showSetupErr('URL은 https://로 시작해야 합니다'); return; }
+  try {
+    await initSupabase(url, key);
+    // 연결 테스트
+    const { error } = await sb.from('profiles').select('id').limit(1);
+    if(error && error.code !== 'PGRST116') {
+      // 테이블이 없으면 안내
+      if(error.message.includes('relation') || error.code === '42P01') {
+        showSetupErr('테이블이 없습니다. 배포 가이드의 SQL을 먼저 실행해주세요.');
+        return;
+      }
+    }
+    localStorage.setItem(CFG_KEY, JSON.stringify({url, key}));
+    ok.textContent = '✅ 연결 성공! 로그인 화면으로 이동합니다...';
+    ok.style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('setupScreen').style.display='none';
+      document.getElementById('loginScreen').classList.add('show');
+    }, 1500);
+  } catch(e) {
+    showSetupErr('연결 실패: ' + e.message);
+  }
+}
+function showSetupErr(msg) {
+  const el = document.getElementById('setup-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+/* ════════════════════════
+   AUTH
+   ════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('form-login').style.display=tab==='login'?'':'none';
+  document.getElementById('form-register').style.display=tab==='register'?'':'none';
+  showLoginErr('');
+}
+function showLoginErr(msg) {
+  const el=document.getElementById('login-err');
+  el.textContent=msg; el.style.display=msg?'block':'none';
+}
+
+async function doLogin() {
+  const email=document.getElementById('l-email').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  if(!email||!pw){showLoginErr('이메일과 비밀번호를 입력하세요');return;}
+  showLoading('로그인 중...');
+  const {data,error} = await sb.auth.signInWithPassword({email,password:pw});
+  hideLoading();
+  if(error){showLoginErr('로그인 실패: '+error.message);return;}
+  await afterLogin(data.user);
+}
+
+async function doRegister() {
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pw=document.getElementById('r-pw').value;
+  const role=document.getElementById('r-role').value.trim()||'안전관리자';
+  if(!name||!email||!pw){showLoginErr('모든 항목을 입력하세요');return;}
+  if(pw.length<6){showLoginErr('비밀번호는 6자 이상이어야 합니다');return;}
+  showLoading('계정 생성 중...');
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{name,role}}});
+  hideLoading();
+  if(error){showLoginErr('가입 실패: '+error.message);return;}
+  // 프로필 저장
+  if(data.user) {
+    await sb.from('profiles').upsert({id:data.user.id,name,role,email,created_at:new Date().toISOString()});
+    await afterLogin(data.user);
+  } else {
+    showLoginErr('이메일 인증이 필요합니다. 이메일을 확인하세요.');
+  }
+}
+
+async function afterLogin(user) {
+  currentUser = user;
+  // 프로필 로드
+  const {data:profile} = await sb.from('profiles').select('*').eq('id',user.id).single();
+  userProfile = profile || {name:user.user_metadata?.name||user.email, role:user.user_metadata?.role||'안전관리자'};
+  // 현장정보 로드
+  const {data:site} = await sb.from('sites').select('*').eq('user_id',user.id).single();
+  siteData = site;
+
+  document.getElementById('loginScreen').classList.remove('show');
+  document.getElementById('app').classList.add('show');
+  initApp();
+}
+
+async function doLogout() {
+  if(!confirm('로그아웃 하시겠습니까?'))return;
+  await sb.auth.signOut();
+  currentUser=null; userProfile=null; siteData=null;
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginScreen').classList.add('show');
+  resetUI();
+}
+
+/* ════════════════════════
+   APP INIT
+   ════════════════════════ */
+const TBM_CHK=['안전보호구 착용 상태 전원 확인','작업 전 장비·기계 이상 유무 점검','안전통로 및 작업발판 상태 확인','출입금지 구역 표지판 설치','신호수 배치 확인','비상대피로 사전 숙지','안전대 부착설비 점검','화기 주변 가연물 제거','보건 위생시설 확인','악천후 대비 작업중지 기준 공지','작업 전 위험요인 공유 완료','협력업체 안전교육 확인'];
+const PERMIT_CHK=['작업허가서 발급 및 현장 비치','위험구역 출입금지 표지 설치','소화기 및 방화포 비치','안전담당자 현장 상주 배치','작업자 안전교육 실시 확인','개인보호구 전원 지급·착용 확인','비상연락망 현장 게시','주변 관계자 통보','환기설비 작동 확인','가스 농도 측정 (밀폐·화기)','전기 차단 및 잠금 확인','작업 종료 후 점검 계획 수립'];
+let riskN=0,sigN=0;
+
+function initApp() {
+  const d=new Date();
+  document.getElementById('topbar-date').textContent=d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  const today=d.toISOString().split('T')[0];
+  ['t-date','r-date','e-date','p-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+  updateUserUI();
+  if(siteData) loadSiteFields(siteData);
+  renderChecks('tbm-checks',TBM_CHK);
+  renderChecks('permit-checks',PERMIT_CHK);
+  addRiskRow();addRiskRow();addRiskRow();
+  loadCounts();
+  go('home',document.querySelector('.nav-btn'));
+}
+
+function resetUI(){
+  riskN=0;sigN=0;
+  document.getElementById('risk-tbody').innerHTML='';
+  document.getElementById('tbm-signers').innerHTML='';
+  document.getElementById('edu-signers').innerHTML='';
+  go('home',document.querySelector('.nav-btn'));
+}
+
+function updateUserUI(){
+  if(!userProfile)return;
+  document.getElementById('sb-avatar').textContent=(userProfile.name||'?').charAt(0);
+  document.getElementById('sb-name').textContent=userProfile.name||'-';
+  document.getElementById('sb-role').textContent=userProfile.role||'안전관리자';
+  document.getElementById('sb-site').textContent=siteData?.name||'현장명 미설정';
+}
+
+/* ════════════════════════
+   SITE (클라우드 저장)
+   ════════════════════════ */
+async function saveSite(){
+  const site={
+    user_id:currentUser.id,
+    name:gv('si-name'),mgr:gv('si-mgr'),dir:gv('si-dir'),owner:gv('si-owner'),
+    cost:gv('si-cost'),period:gv('si-period'),addr:gv('si-addr'),
+    tel:gv('si-tel'),office:gv('si-office'),sub:gv('si-sub'),
+    updated_at:new Date().toISOString()
+  };
+  setSyncBadge('saving');
+  const {error}=await sb.from('sites').upsert(site,{onConflict:'user_id'});
+  if(error){setSyncBadge('err');toast('❌ 저장 실패: '+error.message);return;}
+  siteData=site;
+  setSyncBadge('ok');
+  updateUserUI();
+  updateSiteStrips(site);
+  toast('✅ 현장정보가 클라우드에 저장되었습니다');
+}
+
+function loadSiteFields(site){
+  if(!site)return;
+  const map={'si-name':'name','si-mgr':'mgr','si-dir':'dir','si-owner':'owner','si-cost':'cost','si-period':'period','si-addr':'addr','si-tel':'tel','si-office':'office','si-sub':'sub'};
+  Object.entries(map).forEach(([id,k])=>{const el=document.getElementById(id);if(el&&site[k])el.value=site[k];});
+  updateSiteStrips(site);
+}
+
+function updateSiteStrips(site){
+  if(!site)return;
+  const html=`<span class="ss-name">${site.name||'현장명 미설정'}</span><div class="ss-meta"><span>안전관리자: ${site.mgr||'-'}</span><span>현장소장: ${site.dir||'-'}</span><span>발주처: ${site.owner||'-'}</span><span>공사기간: ${site.period||'-'}</span></div>`;
+  ['ss-tbm','ss-risk','ss-edu','ss-permit','ss-accident'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
+}
+
+function setSyncBadge(state){
+  const el=document.getElementById('sync-badge');
+  el.className='sync-badge '+state;
+  el.textContent=state==='ok'?'☁️ 클라우드 저장':state==='saving'?'⏳ 저장 중...':'❌ 저장 오류';
+}
+
+/* ════════════════════════
+   COUNTS (클라우드)
+   ════════════════════════ */
+async function loadCounts(){
+  const {data}=await sb.from('counts').select('*').eq('user_id',currentUser.id).single();
+  const c=data||{tbm:0,risk:0,edu:0,permit:0,acc:0};
+  updateStatUI(c);
+}
+
+async function bumpCount(k){
+  const {data}=await sb.from('counts').select('*').eq('user_id',currentUser.id).single();
+  const c=data||{user_id:currentUser.id,tbm:0,risk:0,edu:0,permit:0,acc:0};
+  c[k]=(c[k]||0)+1;
+  c.user_id=currentUser.id;
+  await sb.from('counts').upsert(c,{onConflict:'user_id'});
+  updateStatUI(c);
+}
+
+function updateStatUI(c){
+  document.getElementById('st-tbm').textContent=c.tbm||0;
+  document.getElementById('st-risk').textContent=c.risk||0;
+  document.getElementById('st-edu').textContent=c.edu||0;
+  document.getElementById('st-all').textContent=(c.tbm||0)+(c.risk||0)+(c.edu||0)+(c.permit||0)+(c.acc||0);
+  ['tbm','risk','edu','permit','acc'].forEach(k=>{const el=document.getElementById('cnt-'+k+'-sb');if(el)el.textContent=c[k]||0;});
+}
+
+/* ════════════════════════
+   NAV
+   ════════════════════════ */
+const titleMap={home:'홈 / 현장정보',tbm:'TBM 일지',risk:'위험성평가서',edu:'안전교육 기록부',permit:'작업허가서',accident:'사고보고서',law:'법령 빠른참조'};
+const subMap={home:'현장정보를 입력하고 서류를 작성하세요',tbm:'작업 전 안전점검 회의 기록',risk:'위험요인 평가 및 개선대책',edu:'안전보건교육 실시 기록',permit:'위험작업 허가 및 통제',accident:'산업재해 조사표 작성',law:'산안법·중처법·건진법 주요 조문'};
+
+function go(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('on');
+  if(btn)btn.classList.add('active');
+  document.getElementById('topbar-title').textContent=titleMap[id]||id;
+  document.getElementById('topbar-sub').textContent=subMap[id]||'';
+  if(siteData)updateSiteStrips(siteData);
+  closeSidebar();
+}
+
+function goTo(id){
+  const btns=document.querySelectorAll('.nav-btn');
+  const map={home:0,tbm:1,risk:2,edu:3,permit:4,accident:5,law:7};
+  go(id,btns[map[id]||0]);
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+
+/* ════════════════════════
+   FORM UTILS
+   ════════════════════════ */
+function renderChecks(id,list){const el=document.getElementById(id);if(!el)return;el.innerHTML=list.map((t,i)=>`<label class="chk" id="${id}-${i}"><input type="checkbox" onchange="this.closest('.chk').classList.toggle('on',this.checked)"> ${t}</label>`).join('');}
+function getChecked(cid,all){return all.filter((t,i)=>{const el=document.querySelector(`#${cid}-${i} input`);return el&&el.checked;});}
+function addSigner(cid,label){sigN++;const area=document.getElementById(cid);if(!area)return;const isEdu=cid.includes('edu');const d=document.createElement('div');d.className='signer';d.innerHTML=`<div class="s-num">${label} ${sigN}</div><input placeholder="성명">${isEdu?'<input placeholder="직종/소속" style="margin-top:5px">':''}<div class="sign-area">서 명</div>`;area.appendChild(d);}
+function getSigners(cid){return Array.from(document.querySelectorAll('#'+cid+' .signer')).map(b=>{const ins=b.querySelectorAll('input');return{name:ins[0]?ins[0].value:'',extra:ins[1]?ins[1].value:''};});}
+function addRiskRow(){riskN++;const n=riskN;const tr=document.createElement('tr');tr.id='rr-'+n;tr.innerHTML=`<td style="text-align:center;color:var(--light);font-family:'IBM Plex Mono',monospace">${n}</td><td><input placeholder="굴착"></td><td><input placeholder="토사 붕괴"></td><td><input placeholder="매몰"></td><td><select onchange="calcR(${n})"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td><td><select onchange="calcR(${n})"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td><td style="text-align:center;font-weight:700;font-family:'IBM Plex Mono',monospace" class="rs-${n}">1</td><td style="text-align:center"><span class="badge badge-low rg-${n}">낮음</span></td><td><input placeholder="토류판 설치"></td><td><input placeholder="안전관리자"></td><td style="text-align:center"><button onclick="document.getElementById('rr-${n}').remove()" style="border:none;background:none;color:var(--light);cursor:pointer;font-size:18px;padding:0 2px">×</button></td>`;document.getElementById('risk-tbody').appendChild(tr);}
+function calcR(n){const row=document.getElementById('rr-'+n);if(!row)return;const sels=row.querySelectorAll('select');const s=parseInt(sels[0].value)*parseInt(sels[1].value);row.querySelector('.rs-'+n).textContent=s;const g=row.querySelector('.rg-'+n);if(s<=4){g.textContent='낮음';g.className='badge badge-low rg-'+n;}else if(s<=9){g.textContent='중간';g.className='badge badge-mid rg-'+n;}else{g.textContent='높음';g.className='badge badge-high rg-'+n;}}
+function getRiskRows(){return Array.from(document.querySelectorAll('#risk-tbody tr')).map(tr=>{const ins=tr.querySelectorAll('input'),sels=tr.querySelectorAll('select');const sc=tr.querySelector('[class*="rs-"]'),gr=tr.querySelector('[class*="rg-"]');return{step:ins[0]?ins[0].value:'',hazard:ins[1]?ins[1].value:'',damage:ins[2]?ins[2].value:'',freq:sels[0]?sels[0].value:'',sev:sels[1]?sels[1].value:'',score:sc?sc.textContent:'',grade:gr?gr.textContent:'',measure:ins[3]?ins[3].value:'',person:ins[4]?ins[4].value:''};});}
+function gv(id){return(document.getElementById(id)||{}).value||'';}
+
+function clearForm(type){
+  if(!confirm('현재 입력 내용을 초기화할까요?'))return;
+  const ids={tbm:['t-team','t-loc','t-cnt','t-leader','t-temp','t-time','t-work','t-hazard','t-measure','t-note'],risk:['r-work','r-eval','r-overview','r-author','r-reviewer','r-approver'],edu:['e-place','e-hours','e-trainer','e-cnt','e-content','e-note'],permit:['p-loc','p-time','p-leader','p-cnt','p-approver','p-num','p-work','p-hazard','p-safety','p-emergency'],accident:['a-name','a-company','a-job','a-career','a-loc','a-injury','a-hospital','a-desc','a-direct','a-indirect','a-prevent','a-dt']};
+  (ids[type]||[]).forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  if(type==='tbm'){document.querySelectorAll('#tbm-checks .chk').forEach(el=>{el.classList.remove('on');el.querySelector('input').checked=false;});document.getElementById('tbm-signers').innerHTML='';}
+  if(type==='risk'){document.getElementById('risk-tbody').innerHTML='';riskN=0;addRiskRow();addRiskRow();addRiskRow();}
+  if(type==='edu'){document.getElementById('edu-signers').innerHTML='';}
+  if(type==='permit'){document.querySelectorAll('#permit-checks .chk').forEach(el=>{el.classList.remove('on');el.querySelector('input').checked=false;});}
+  sigN=0;toast('↺ 초기화 완료');
+}
+
+/* ════════════════════════
+   PDF PRINT
+   ════════════════════════ */
+function getS(){return siteData||{};}
+function basePrintStyle(){return`<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:'Noto Sans KR','Malgun Gothic','Apple Gothic',sans-serif;font-size:12px;padding:20px;color:#1a1f2e;line-height:1.6}h1{font-size:19px;font-weight:700;color:#0d7a4e;border-bottom:3px solid #16a36a;padding-bottom:8px;margin-bottom:14px}h2{font-size:13px;font-weight:700;color:#1a1f2e;border-left:4px solid #16a36a;padding-left:9px;margin:16px 0 8px}table{width:100%;border-collapse:collapse;margin-bottom:10px}th,td{border:1px solid #e2e5ea;padding:6px 9px;font-size:11px;vertical-align:top}th{background:#f5f6f8;font-weight:700;color:#6b7280}.site-bar{background:#e8f8f1;border:1px solid #b8edd8;border-radius:7px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0d7a4e;display:flex;gap:16px;flex-wrap:wrap}.site-bar b{font-weight:700}.badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}.badge-low{background:#dcfce7;color:#166534}.badge-mid{background:#fef9c3;color:#713f12}.badge-high{background:#fee2e2;color:#991b1b}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}.chk-item{display:flex;align-items:center;gap:7px;font-size:11px;padding:5px 8px;border:1px solid #e2e5ea;border-radius:5px}.chk-ok{background:#e8f8f1;border-color:#16a36a;color:#0d7a4e;font-weight:500}.sign-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}.sign-box{border:1px solid #e2e5ea;padding:8px;border-radius:6px;min-height:60px}.sign-box .sn{font-size:10px;color:#9ca3af;margin-bottom:4px}.sign-box .nm{font-size:12px;font-weight:700}.sign-box .ex{font-size:10px;color:#6b7280}.sign-line{border-top:1px solid #e2e5ea;margin-top:10px;font-size:9px;color:#d1d5db;height:22px}.footer{margin-top:16px;padding-top:8px;border-top:1px solid #e2e5ea;font-size:10px;color:#9ca3af;text-align:right}.risk-note{background:#fffbeb;border:1px solid #d97706;border-radius:5px;padding:6px 10px;font-size:10px;color:#92400e;margin-top:8px}</style>`;}
+function siteBar(){const s=getS();return`<div class="site-bar"><span><b>현장명:</b> ${s.name||'-'}</span><span><b>안전관리자:</b> ${s.mgr||'-'}</span><span><b>현장소장:</b> ${s.dir||'-'}</span><span><b>발주처:</b> ${s.owner||'-'}</span><span><b>공사기간:</b> ${s.period||'-'}</span></div>`;}
+function signRow(signers,label){const items=signers.length?signers:[{},{},{},{}];return`<div class="sign-grid">${items.slice(0,Math.max(4,items.length)).map((s,i)=>`<div class="sign-box"><div class="sn">${label||'참석자'} ${i+1}</div><div class="nm">${s.name||''}</div>${s.extra?`<div class="ex">${s.extra}</div>`:''}<div class="sign-line">서 명</div></div>`).join('')}</div>`;}
+function approvalRow(labels){return`<table style="margin-top:12px"><tr>${labels.map(l=>`<th style="width:${Math.floor(100/labels.length)}%">${l}</th>`).join('')}</tr><tr>${labels.map(()=>`<td style="height:50px;font-size:11px;color:#9ca3af">(서명)</td>`).join('')}</tr></table>`;}
+function footer(){return`<div class="footer">출력일시: ${new Date().toLocaleString('ko-KR')} &nbsp;|&nbsp; 작성자: ${userProfile?.name||'-'} (${currentUser?.email||'-'}) &nbsp;|&nbsp; 건설현장 안전관리 시스템</div>`;}
+function openPrint(html){const w=window.open('','_blank','width=900,height=750');w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>안전관리 서류</title>${basePrintStyle()}</head><body>${html}${footer()}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print();},700);}
+
+function pdfTBM(){const chk=getChecked('tbm-checks',TBM_CHK);const signers=getSigners('tbm-signers');const chkHtml=TBM_CHK.map(t=>`<div class="chk-item ${chk.includes(t)?'chk-ok':''}">${chk.includes(t)?'✓ ':''} ${t}</div>`).join('');openPrint(`<h1>TBM (Tool Box Meeting) 일지</h1>${siteBar()}<table><tr><th>작성일자</th><td>${gv('t-date')}</td><th>작업팀/공종</th><td>${gv('t-team')}</td></tr><tr><th>작업장소</th><td>${gv('t-loc')}</td><th>참석인원</th><td>${gv('t-cnt')}명</td></tr><tr><th>진행자</th><td>${gv('t-leader')}</td><th>날씨/기온</th><td>${gv('t-weather')} / ${gv('t-temp')}°C</td></tr><tr><th>작업시간</th><td colspan="3">${gv('t-time')}</td></tr></table><h2>금일 주요 작업</h2><p style="padding:7px 10px;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;line-height:1.7">${(gv('t-work')||'-').replace(/\n/g,'<br>')}</p><h2>주요 위험요인</h2><p style="padding:7px 10px;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;line-height:1.7;background:#fffbeb">${(gv('t-hazard')||'-').replace(/\n/g,'<br>')}</p><h2>안전대책</h2><p style="padding:7px 10px;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;line-height:1.7;background:#e8f8f1">${(gv('t-measure')||'-').replace(/\n/g,'<br>')}</p>${gv('t-note')?`<h2>특이사항</h2><p style="padding:7px 10px;border:1px solid #e2e5ea;border-radius:5px;font-size:11px">${gv('t-note').replace(/\n/g,'<br>')}</p>`:''}<h2>안전수칙 체크리스트</h2><div class="check-grid">${chkHtml}</div><h2>참석자 서명</h2>${signRow(signers,'참석자')}${approvalRow(['작성자 (안전관리자)','확인자 (관리감독자)','현장소장','비 고'])}`);bumpCount('tbm');toast('🖨️ 출력창에서 PDF로 저장을 선택하세요');}
+function pdfRisk(){const rows=getRiskRows();const rHtml=rows.map((r,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${r.step}</td><td>${r.hazard}</td><td>${r.damage}</td><td style="text-align:center">${r.freq}</td><td style="text-align:center">${r.sev}</td><td style="text-align:center;font-weight:700">${r.score}</td><td style="text-align:center"><span class="badge badge-${parseInt(r.score)<=4?'low':parseInt(r.score)<=9?'mid':'high'}">${r.grade}</span></td><td>${r.measure}</td><td>${r.person}</td></tr>`).join('');openPrint(`<h1>위험성평가서</h1>${siteBar()}<table><tr><th>평가일자</th><td>${gv('r-date')}</td><th>평가구분</th><td>${gv('r-type')}</td></tr><tr><th>공종/작업명</th><td>${gv('r-work')}</td><th>평가자</th><td>${gv('r-eval')}</td></tr>${gv('r-overview')?`<tr><th>작업개요</th><td colspan="3">${gv('r-overview').replace(/\n/g,'<br>')}</td></tr>`:''}</table><h2>위험요인 목록</h2><table><thead><tr><th>No.</th><th>작업단계</th><th>위험요인</th><th>잠재적피해</th><th>빈도</th><th>강도</th><th>위험도</th><th>등급</th><th>개선대책</th><th>담당자</th></tr></thead><tbody>${rHtml}</tbody></table><div class="risk-note">위험도 = 빈도×강도 &nbsp;|&nbsp; 낮음(1~4) &nbsp;|&nbsp; 중간(5~9) &nbsp;|&nbsp; 높음(10~25): 즉시 개선</div>${approvalRow([`작성자: ${gv('r-author')||'　'}`,`검토자: ${gv('r-reviewer')||'　'}`,`승인자: ${gv('r-approver')||'　'}`])}`);bumpCount('risk');toast('🖨️ 출력창에서 PDF로 저장을 선택하세요');}
+function pdfEdu(){const signers=getSigners('edu-signers');const s=getS();const tRows=signers.length?signers.map((s,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${s.name}</td><td>${s.extra}</td><td style="height:30px"></td></tr>`).join(''):`<tr><td colspan="4" style="text-align:center;color:#9ca3af;height:36px">참석자를 추가해주세요</td></tr>`;openPrint(`<h1>안전보건교육 실시 기록부</h1>${siteBar()}<table><tr><th>교육일자</th><td>${gv('e-date')}</td><th>교육구분</th><td>${gv('e-type')}</td></tr><tr><th>교육장소</th><td>${gv('e-place')}</td><th>교육시간</th><td>${gv('e-hours')}시간</td></tr><tr><th>강사명</th><td>${gv('e-trainer')}</td><th>참석인원</th><td>${gv('e-cnt')}명</td></tr><tr><th>교육형태</th><td>${gv('e-method')}</td><th>법적근거</th><td>${gv('e-law')}</td></tr><tr><th>교육내용</th><td colspan="3" style="white-space:pre-wrap;line-height:1.7">${(gv('e-content')||'-').replace(/\n/g,'<br>')}</td></tr>${gv('e-note')?`<tr><th>특이사항</th><td colspan="3">${gv('e-note')}</td></tr>`:''}</table><h2>참석자 명단 및 서명</h2><table><thead><tr><th style="width:30px">No.</th><th>성명</th><th>직종/소속</th><th style="width:100px">서명</th></tr></thead><tbody>${tRows}</tbody></table>${approvalRow([`강사: ${gv('e-trainer')||'　'}`,`안전관리자: ${s.mgr||'　'}`,`현장소장: ${s.dir||'　'}`])}`);bumpCount('edu');toast('🖨️ 출력창에서 PDF로 저장을 선택하세요');}
+function pdfPermit(){const chk=getChecked('permit-checks',PERMIT_CHK);const chkHtml=PERMIT_CHK.map(t=>`<div class="chk-item ${chk.includes(t)?'chk-ok':''}">${chk.includes(t)?'✓ ':''} ${t}</div>`).join('');openPrint(`<h1>작업허가서 (Permit to Work)</h1>${siteBar()}<table><tr><th>허가번호</th><td>${gv('p-num')||'-'}</td><th>허가일자</th><td>${gv('p-date')}</td></tr><tr><th>작업유형</th><td>${gv('p-type')}</td><th>작업시간</th><td>${gv('p-time')}</td></tr><tr><th>작업장소</th><td>${gv('p-loc')}</td><th>작업인원</th><td>${gv('p-cnt')}명</td></tr><tr><th>작업책임자</th><td>${gv('p-leader')}</td><th>승인자</th><td>${gv('p-approver')}</td></tr><tr><th>비상연락망</th><td colspan="3">${gv('p-emergency')||'-'}</td></tr></table><h2>작업 내용</h2><p style="padding:7px 10px;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;line-height:1.7">${(gv('p-work')||'-').replace(/\n/g,'<br>')}</p><h2>위험요인</h2><p style="padding:7px 10px;background:#fffbeb;border:1px solid #e2e5ea;border-radius:5px;font-size:11px">${(gv('p-hazard')||'-').replace(/\n/g,'<br>')}</p><h2>안전조치</h2><p style="padding:7px 10px;background:#e8f8f1;border:1px solid #e2e5ea;border-radius:5px;font-size:11px">${(gv('p-safety')||'-').replace(/\n/g,'<br>')}</p><h2>안전조치 체크리스트</h2><div class="check-grid">${chkHtml}</div>${approvalRow(['작업책임자','안전관리자 (승인)','현장소장','비 고'])}`);bumpCount('permit');toast('🖨️ 출력창에서 PDF로 저장을 선택하세요');}
+function pdfAccident(){openPrint(`<h1>산업재해 조사표</h1>${siteBar()}<table><tr><th>발생일시</th><td>${gv('a-dt')}</td><th>재해구분</th><td>${gv('a-type')}</td></tr><tr><th>재해자 성명</th><td>${gv('a-name')}</td><th>소속</th><td>${gv('a-company')}</td></tr><tr><th>직종</th><td>${gv('a-job')}</td><th>경력</th><td>${gv('a-career')}년</td></tr><tr><th>발생장소</th><td>${gv('a-loc')}</td><th>재해유형</th><td>${gv('a-category')}</td></tr><tr><th>부상부위/정도</th><td>${gv('a-injury')}</td><th>병원이송</th><td>${gv('a-hospital')}</td></tr><tr><th>발생경위</th><td colspan="3" style="line-height:1.8">${(gv('a-desc')||'-').replace(/\n/g,'<br>')}</td></tr><tr><th>직접원인</th><td colspan="3">${(gv('a-direct')||'-').replace(/\n/g,'<br>')}</td></tr><tr><th>간접원인</th><td colspan="3">${(gv('a-indirect')||'-').replace(/\n/g,'<br>')}</td></tr><tr><th>재발방지대책</th><td colspan="3" style="line-height:1.8">${(gv('a-prevent')||'-').replace(/\n/g,'<br>')}</td></tr></table>${approvalRow(['작성자 (안전관리자)','확인자 (현장소장)','보고일자','관할 노동지청'])}`);bumpCount('acc');toast('🖨️ 출력창에서 PDF로 저장을 선택하세요');}
+
+/* ════════════════════════
+   LOADING / TOAST
+   ════════════════════════ */
+function showLoading(msg='처리 중...'){document.getElementById('loadingOverlay').style.display='flex';document.getElementById('loadingText').textContent=msg;}
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+function toast(msg){let t=document.getElementById('_toast');if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0f1923;color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:Noto Sans KR,sans-serif';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',3200);}
+
+/* ════════════════════════
+   STARTUP
+   ════════════════════════ */
+async function startup(){
+  const cfg=getSavedConfig();
+  if(!cfg){
+    document.getElementById('setupScreen').style.display='flex';
+    return;
+  }
+  // 하드코딩된 값이 있으면 설정 화면 건너뜀
+  document.getElementById('setupScreen').style.display='none';
+  await initSupabase(cfg.url,cfg.key);
+  // 이미 로그인된 세션 확인
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    await afterLogin(session.user);
+  } else {
+    document.getElementById('setupScreen').style.display='none';
+    document.getElementById('loginScreen').classList.add('show');
+  }
+}
+
+startup();
+</script>
+</body>
+</html>
