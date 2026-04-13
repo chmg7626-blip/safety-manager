@@ -85,6 +85,43 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .nav-btn.active .bcnt{background:rgba(255,255,255,.25)}
 .sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:rgba(255,255,255,.2);line-height:1.6}
 
+/* ── SITE BANNER ── */
+.site-banner{background:linear-gradient(135deg,#0f1923 0%,#1a2d3f 100%);border-radius:var(--border-radius-lg);padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sb-name{font-size:17px;font-weight:700;color:#6ee7b7;margin-bottom:5px}
+.sb-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:rgba(255,255,255,.5)}
+.sb-meta span b{color:rgba(255,255,255,.8);font-weight:500}
+.sb-edit-btn{padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.sb-edit-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+.site-edit-panel{display:none;margin-bottom:12px}
+.site-edit-panel.open{display:block}
+
+/* ── CALENDAR ── */
+.cal-day-names{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cal-day-names span{text-align:center;font-size:11px;color:var(--color-text-secondary);font-weight:500;padding:4px 0}
+.cal-grid-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:10px}
+.cal-cell{min-height:52px;border-radius:6px;padding:4px;cursor:pointer;position:relative;border:.5px solid transparent;transition:all .12s}
+.cal-cell:hover{background:var(--color-background-secondary);border-color:var(--color-border-tertiary)}
+.cal-cell.today{background:var(--g3);border-color:var(--g4)}
+.cal-cell.today .cal-num{color:var(--g2);font-weight:700}
+.cal-cell.other-month .cal-num{color:var(--color-text-secondary);opacity:.4}
+.cal-cell.selected{border-color:var(--g);background:var(--g3)}
+.cal-num{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.cal-dot-wrap{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
+.cal-dot.red{background:var(--red)}
+.cal-dot.blue{background:var(--blue)}
+.cal-event-form{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;margin-top:8px;border:.5px solid var(--color-border-tertiary)}
+.cal-event-form input{width:100%;padding:8px 12px;border:1.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13px;font-family:inherit;color:var(--color-text-primary);background:#fff}
+.cal-event-form input:focus{outline:none;border-color:var(--g)}
+.cal-events-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.cal-event-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);font-size:12px}
+.cal-event-item .ev-dot{width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0}
+.cal-event-item .ev-date{font-size:11px;color:var(--color-text-secondary);min-width:60px}
+.cal-event-item .ev-text{flex:1;color:var(--color-text-primary)}
+.cal-event-item .ev-del{color:var(--color-text-secondary);cursor:pointer;font-size:16px;padding:0 2px;border:none;background:none}
+.cal-event-item .ev-del:hover{color:var(--red)}
+.cal-no-event{font-size:12px;color:var(--color-text-secondary);text-align:center;padding:12px}
+
 /* ── MAIN ── */
 .main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -375,36 +412,70 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
       <!-- HOME -->
       <div class="panel on" id="panel-home">
-        <div class="stat-grid">
-          <div class="stat-card green"><div class="s-icon">📋</div><div class="s-num" id="st-tbm">0</div><div class="s-lbl">TBM 출력</div></div>
-          <div class="stat-card amber"><div class="s-icon">⚠️</div><div class="s-num" id="st-risk">0</div><div class="s-lbl">위험성평가</div></div>
-          <div class="stat-card blue"><div class="s-icon">🎓</div><div class="s-num" id="st-edu">0</div><div class="s-lbl">안전교육</div></div>
-          <div class="stat-card red"><div class="s-icon">🗂️</div><div class="s-num" id="st-all">0</div><div class="s-lbl">총 출력건수</div></div>
-        </div>
-        <div class="quick-grid">
-          <div class="quick-card" onclick="goTo('tbm')"><div class="qc-icon">📋</div><h4>TBM 일지</h4><p>작업 전 안전점검 회의 기록</p><div class="qc-arrow">→</div></div>
-          <div class="quick-card" onclick="goTo('risk')"><div class="qc-icon">⚠️</div><h4>위험성평가서</h4><p>빈도×강도 자동계산, 위험등급</p><div class="qc-arrow">→</div></div>
-          <div class="quick-card" onclick="goTo('edu')"><div class="qc-icon">🎓</div><h4>안전교육 기록부</h4><p>정기·채용·특별교육 기록</p><div class="qc-arrow">→</div></div>
-          <div class="quick-card" onclick="goTo('permit')"><div class="qc-icon">✅</div><h4>작업허가서</h4><p>화기·밀폐·고소 위험작업 허가</p><div class="qc-arrow">→</div></div>
-          <div class="quick-card" onclick="goTo('accident')"><div class="qc-icon">🚨</div><h4>사고보고서</h4><p>재해 조사표, 원인분석</p><div class="qc-arrow">→</div></div>
-          <div class="quick-card" onclick="goTo('law')"><div class="qc-icon">📚</div><h4>법령 빠른참조</h4><p>산안법·중처법·건진법</p><div class="qc-arrow">→</div></div>
-        </div>
-        <div class="card">
-          <div class="card-head"><div><h3>내 현장 기본정보</h3><div class="sub">☁️ 저장하면 클라우드에 동기화 — 어떤 기기에서든 불러올 수 있습니다</div></div></div>
-          <div class="grid3">
-            <div class="fg"><label>현장명 *</label><input id="si-name" placeholder="○○ 신축공사 현장"></div>
-            <div class="fg"><label>안전관리자 *</label><input id="si-mgr" placeholder="홍길동"></div>
-            <div class="fg"><label>현장소장</label><input id="si-dir" placeholder="김현장"></div>
-            <div class="fg"><label>발주처</label><input id="si-owner" placeholder="○○공사"></div>
-            <div class="fg"><label>공사금액 (억원)</label><input id="si-cost" type="number" placeholder="120"></div>
-            <div class="fg"><label>공사기간</label><input id="si-period" placeholder="2025.01 ~ 2026.12"></div>
-            <div class="fg span3"><label>현장 주소</label><input id="si-addr" placeholder="서울특별시 ○○구 ○○동 123번지"></div>
-            <div class="fg"><label>비상연락처</label><input id="si-tel" placeholder="010-0000-0000"></div>
-            <div class="fg"><label>관할 노동지청</label><input id="si-office" placeholder="○○지방고용노동청"></div>
-            <div class="fg"><label>주요 협력업체</label><input id="si-sub" placeholder="○○건설, ○○전기"></div>
+
+        <!-- ① 현장 기본정보 배너 -->
+        <div class="site-banner" id="site-banner-home">
+          <div class="sb-info">
+            <div class="sb-name" id="sb-home-name">현장명 미설정</div>
+            <div class="sb-meta" id="sb-home-meta"></div>
           </div>
-          <div class="btn-row"><button class="btn btn-primary" onclick="saveSite()">💾 현장정보 저장 (클라우드)</button></div>
+          <button class="sb-edit-btn" onclick="toggleSiteEdit()">정보 수정 ✏️</button>
         </div>
+
+        <!-- 현장정보 편집 패널 (접었다 펼치기) -->
+        <div class="site-edit-panel" id="site-edit-panel">
+          <div class="card" style="margin-bottom:8px">
+            <div class="card-head"><div><h3>내 현장 기본정보</h3><div class="sub">☁️ 저장하면 클라우드에 동기화됩니다</div></div></div>
+            <div class="grid3">
+              <div class="fg"><label>현장명 *</label><input id="si-name" placeholder="○○ 신축공사 현장"></div>
+              <div class="fg"><label>안전관리자 *</label><input id="si-mgr" placeholder="홍길동"></div>
+              <div class="fg"><label>현장소장</label><input id="si-dir" placeholder="김현장"></div>
+              <div class="fg"><label>발주처</label><input id="si-owner" placeholder="○○공사"></div>
+              <div class="fg"><label>공사금액 (억원)</label><input id="si-cost" type="number" placeholder="120"></div>
+              <div class="fg"><label>공사기간</label><input id="si-period" placeholder="2025.01 ~ 2026.12"></div>
+              <div class="fg span3"><label>현장 주소</label><input id="si-addr" placeholder="서울특별시 ○○구 ○○동 123번지"></div>
+              <div class="fg"><label>비상연락처</label><input id="si-tel" placeholder="010-0000-0000"></div>
+              <div class="fg"><label>관할 노동지청</label><input id="si-office" placeholder="○○지방고용노동청"></div>
+              <div class="fg"><label>주요 협력업체</label><input id="si-sub" placeholder="○○건설, ○○전기"></div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="saveSite()">💾 저장 (클라우드)</button>
+              <button class="btn" onclick="toggleSiteEdit()">닫기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 이번달 현황 통계 -->
+        <div class="stat-grid">
+          <div class="stat-card green"><div class="s-icon">📋</div><div class="s-num" id="st-tbm">0</div><div class="s-lbl">TBM</div></div>
+          <div class="stat-card amber"><div class="s-icon">⚠️</div><div class="s-num" id="st-risk">0</div><div class="s-lbl">위험성평가</div></div>
+          <div class="stat-card blue"><div class="s-icon">🔍</div><div class="s-num" id="st-edu">0</div><div class="s-lbl">일일안전점검</div></div>
+          <div class="stat-card red"><div class="s-icon">🚨</div><div class="s-num" id="st-all">0</div><div class="s-lbl">사고건수</div></div>
+        </div>
+
+        <!-- ③ 캘린더 -->
+        <div class="card">
+          <div class="card-head">
+            <h3>📅 일정 관리</h3>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-sm" onclick="calPrev()">〈</button>
+              <span id="cal-title" style="font-size:13px;font-weight:500;min-width:90px;text-align:center"></span>
+              <button class="btn btn-sm" onclick="calNext()">〉</button>
+              <button class="btn btn-sm" onclick="calGoToday()">오늘</button>
+            </div>
+          </div>
+          <div class="cal-day-names"></div>
+          <div id="cal-grid" class="cal-grid-wrap"></div>
+          <div id="cal-event-form" class="cal-event-form" style="display:none">
+            <input id="cal-event-input" placeholder="일정 내용 입력..." />
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button class="btn btn-primary btn-sm" onclick="saveCalEvent()">저장</button>
+              <button class="btn btn-sm" onclick="closeCalForm()">취소</button>
+            </div>
+          </div>
+          <div id="cal-events-today" class="cal-events-list"></div>
+        </div>
+
         <div class="alert alert-red"><b>⚡ 중대재해 즉시 신고 (산안법 제54조)</b><br>사망 또는 3일 이상 휴업 재해 → <b>즉시</b> 관할 지방고용노동관서 신고 / 산업재해 조사표 <b>1개월 내</b> 제출</div>
       </div>
 
@@ -576,8 +647,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
    SUPABASE CONFIG
    ★ 여기에 본인 프로젝트 정보를 입력하세요 ★
    ════════════════════════ */
-const SUPABASE_URL = 'https://adkfjemtkwhzvoorhlom.supabase.co';   // 예: 'https://abcdefgh.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFka2ZqZW10a3doenZvb3JobG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzI2ODIsImV4cCI6MjA5MTQ0ODY4Mn0.JTfnJeBHdMia0PKhVzoYR7_W-M7bHlb25sDrkdkRHIs'; // 예: 'eyJhbGci...'
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';   // 예: 'https://abcdefgh.supabase.co'
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // 예: 'eyJhbGci...'
 
 const CFG_KEY = 'sb_config_v1';
 let sb = null;
@@ -744,6 +815,7 @@ function initApp() {
   if(siteData) loadSiteFields(siteData);
   renderChecks('tbm-checks',TBM_CHK);
   renderChecks('permit-checks',PERMIT_CHK);
+  setTimeout(renderCal, 100);
   addRiskRow();addRiskRow();addRiskRow();
   loadCounts();
   go('home',document.querySelector('.nav-btn'));
@@ -783,6 +855,7 @@ async function saveSite(){
   setSyncBadge('ok');
   updateUserUI();
   updateSiteStrips(site);
+  document.getElementById('site-edit-panel').classList.remove('open');
   toast('✅ 현장정보가 클라우드에 저장되었습니다');
 }
 
@@ -791,12 +864,32 @@ function loadSiteFields(site){
   const map={'si-name':'name','si-mgr':'mgr','si-dir':'dir','si-owner':'owner','si-cost':'cost','si-period':'period','si-addr':'addr','si-tel':'tel','si-office':'office','si-sub':'sub'};
   Object.entries(map).forEach(([id,k])=>{const el=document.getElementById(id);if(el&&site[k])el.value=site[k];});
   updateSiteStrips(site);
+  updateHomeBanner(site);
 }
 
 function updateSiteStrips(site){
   if(!site)return;
   const html=`<span class="ss-name">${site.name||'현장명 미설정'}</span><div class="ss-meta"><span>안전관리자: ${site.mgr||'-'}</span><span>현장소장: ${site.dir||'-'}</span><span>발주처: ${site.owner||'-'}</span><span>공사기간: ${site.period||'-'}</span></div>`;
   ['ss-tbm','ss-risk','ss-edu','ss-permit','ss-accident'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
+  updateHomeBanner(site);
+}
+
+function updateHomeBanner(site){
+  if(!site)return;
+  const nameEl=document.getElementById('sb-home-name');
+  const metaEl=document.getElementById('sb-home-meta');
+  if(nameEl)nameEl.textContent=site.name||'현장명 미설정';
+  if(metaEl)metaEl.innerHTML=[
+    site.mgr&&`<span><b>안전관리자:</b> ${site.mgr}</span>`,
+    site.dir&&`<span><b>현장소장:</b> ${site.dir}</span>`,
+    site.owner&&`<span><b>발주처:</b> ${site.owner}</span>`,
+    site.period&&`<span><b>공사기간:</b> ${site.period}</span>`,
+  ].filter(Boolean).join('');
+}
+
+function toggleSiteEdit(){
+  const panel=document.getElementById('site-edit-panel');
+  panel.classList.toggle('open');
 }
 
 function setSyncBadge(state){
@@ -902,6 +995,155 @@ function pdfAccident(){openPrint(`<h1>산업재해 조사표</h1>${siteBar()}<ta
    ════════════════════════ */
 function showLoading(msg='처리 중...'){document.getElementById('loadingOverlay').style.display='flex';document.getElementById('loadingText').textContent=msg;}
 function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+/* ════════════════════════
+   CALENDAR
+   ════════════════════════ */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDate = null;
+let calEvents = JSON.parse(localStorage.getItem('cal_events_v1')||'{}');
+
+function saveCalEvents(){ localStorage.setItem('cal_events_v1', JSON.stringify(calEvents)); }
+
+function renderCal(){
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  document.getElementById('cal-title').textContent =
+    calYear+'년 '+(calMonth+1)+'월';
+
+  // 요일 헤더
+  const dayNames = document.querySelector('.cal-day-names');
+  if(dayNames && !dayNames.innerHTML){
+    ['일','월','화','수','목','금','토'].forEach(d=>{
+      const s=document.createElement('span'); s.textContent=d; dayNames.appendChild(s);
+    });
+  }
+
+  const grid = document.getElementById('cal-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+
+  const totalCells = Math.ceil((firstDay+daysInMonth)/7)*7;
+
+  for(let i=0;i<totalCells;i++){
+    const cell=document.createElement('div');
+    cell.className='cal-cell';
+    let day, isOther=false, dateStr='';
+
+    if(i<firstDay){
+      day=daysInPrev-firstDay+i+1; isOther=true;
+      dateStr=calYear+'-'+String(calMonth===0?12:calMonth).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    } else if(i>=firstDay+daysInMonth){
+      day=i-firstDay-daysInMonth+1; isOther=true;
+      dateStr=calYear+'-'+String(calMonth===11?1:calMonth+2).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    } else {
+      day=i-firstDay+1;
+      dateStr=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    }
+
+    if(isOther) cell.classList.add('other-month');
+    if(dateStr===today.toISOString().split('T')[0]) cell.classList.add('today');
+    if(dateStr===calSelectedDate) cell.classList.add('selected');
+
+    const num=document.createElement('div');
+    num.className='cal-num'; num.textContent=day;
+    cell.appendChild(num);
+
+    // 이벤트 점 표시
+    if(calEvents[dateStr]&&calEvents[dateStr].length){
+      const dots=document.createElement('div'); dots.className='cal-dot-wrap';
+      calEvents[dateStr].slice(0,3).forEach(ev=>{
+        const d=document.createElement('div');
+        d.className='cal-dot'+(ev.color?' '+ev.color:'');
+        dots.appendChild(d);
+      });
+      cell.appendChild(dots);
+    }
+
+    cell.dataset.date=dateStr;
+    cell.onclick=()=>selectCalDay(dateStr);
+    grid.appendChild(cell);
+  }
+  renderCalEventsList();
+}
+
+function selectCalDay(dateStr){
+  calSelectedDate=dateStr;
+  renderCal();
+  const form=document.getElementById('cal-event-form');
+  if(form){
+    form.style.display='block';
+    const d=new Date(dateStr+'T00:00:00');
+    const label=(calMonth+1)+'월'+d.getDate()+'일 일정';
+    document.getElementById('cal-event-input').placeholder=label+' 입력...';
+    document.getElementById('cal-event-input').value='';
+    document.getElementById('cal-event-input').focus();
+  }
+}
+
+function closeCalForm(){
+  document.getElementById('cal-event-form').style.display='none';
+  calSelectedDate=null;
+  renderCal();
+}
+
+function saveCalEvent(){
+  const txt=document.getElementById('cal-event-input').value.trim();
+  if(!txt||!calSelectedDate)return;
+  if(!calEvents[calSelectedDate])calEvents[calSelectedDate]=[];
+  calEvents[calSelectedDate].push({text:txt,id:Date.now()});
+  saveCalEvents();
+  document.getElementById('cal-event-input').value='';
+  renderCal();
+  toast('📅 일정이 저장되었습니다');
+}
+
+function deleteCalEvent(dateStr,id){
+  if(!calEvents[dateStr])return;
+  calEvents[dateStr]=calEvents[dateStr].filter(e=>e.id!==id);
+  if(!calEvents[dateStr].length)delete calEvents[dateStr];
+  saveCalEvents();
+  renderCal();
+}
+
+function renderCalEventsList(){
+  const list=document.getElementById('cal-events-today');
+  if(!list)return;
+  const today=new Date().toISOString().split('T')[0];
+  const showDate=calSelectedDate||today;
+
+  // 이번달 전체 일정 모아서 날짜순 표시
+  const allEvents=[];
+  Object.entries(calEvents).forEach(([date,evs])=>{
+    if(date.startsWith(calYear+'-'+String(calMonth+1).padStart(2,'0'))){
+      evs.forEach(ev=>allEvents.push({date,ev}));
+    }
+  });
+  allEvents.sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(!allEvents.length){
+    list.innerHTML='<div class="cal-no-event">이번달 등록된 일정이 없습니다<br><span style="font-size:11px">날짜를 클릭해 일정을 추가하세요</span></div>';
+    return;
+  }
+  list.innerHTML=allEvents.map(({date,ev})=>{
+    const d=new Date(date+'T00:00:00');
+    const label=(d.getMonth()+1)+'월'+d.getDate()+'일';
+    return `<div class="cal-event-item">
+      <div class="ev-dot"></div>
+      <div class="ev-date">${label}</div>
+      <div class="ev-text">${ev.text}</div>
+      <button class="ev-del" onclick="deleteCalEvent('${date}',${ev.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} calSelectedDate=null; renderCal(); }
+function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} calSelectedDate=null; renderCal(); }
+function calGoToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); calSelectedDate=null; renderCal(); }
+
 function toast(msg){let t=document.getElementById('_toast');if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0f1923;color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:Noto Sans KR,sans-serif';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',3200);}
 
 /* ════════════════════════
