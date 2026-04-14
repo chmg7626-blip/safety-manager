@@ -1012,6 +1012,7 @@ async function saveSite(){
   updateSiteStrips(site);
   document.getElementById('site-edit-panel').classList.remove('open');
   toast('✅ 현장정보가 클라우드에 저장되었습니다');
+  loadWeather();
 }
 
 function loadSiteFields(site){
@@ -1434,7 +1435,7 @@ function saveStatPrint(){
 }
 
 /* ════════════════════════
-   WEATHER — 기상청 API
+   WEATHER — 현장주소 기반
    ════════════════════════ */
 const WX_ICONS={
   '맑음':'☀️','구름조금':'🌤️','구름많음':'⛅','흐림':'☁️',
@@ -1450,56 +1451,70 @@ async function loadWeather(){
   const wxDet=document.getElementById('wx-details');
   if(!wxTemp)return;
 
-  // 위치 정보 요청
-  if(!navigator.geolocation){
-    showWeatherError('위치 정보를 지원하지 않는 브라우저입니다');return;
+  // 현장 주소에서 좌표 추출
+  const addr=siteData?.addr||'';
+  if(!addr){
+    showWeatherError('현장 주소를 먼저 입력·저장해주세요');
+    if(wxLoc)wxLoc.textContent='주소 미설정';
+    return;
   }
 
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const lat=pos.coords.latitude.toFixed(2);
-    const lon=pos.coords.longitude.toFixed(2);
+  if(wxDesc)wxDesc.textContent='날씨 불러오는 중...';
+  if(wxLoc)wxLoc.textContent=addr.length>14?addr.slice(0,14)+'...':addr;
 
-    try{
-      // Open-Meteo 무료 API (API 키 불필요)
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature&timezone=Asia%2FSeoul&forecast_days=1`;
-      const res=await fetch(url);
-      const data=await res.json();
-      const c=data.current;
+  try{
+    // 주소 → 좌표 (Nominatim 무료 지오코딩)
+    const geoUrl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&accept-language=ko`;
+    const geoRes=await fetch(geoUrl,{headers:{'User-Agent':'SafetyManager/1.0'}});
+    const geoData=await geoRes.json();
 
-      const desc=wmoToKorean(c.weather_code);
-      const icon=WX_ICONS[desc]||'🌡️';
+    if(!geoData||!geoData.length){
+      showWeatherError('주소로 위치를 찾을 수 없습니다');return;
+    }
 
-      if(wxIcon)wxIcon.textContent=icon;
-      if(wxTemp)wxTemp.textContent=Math.round(c.temperature_2m)+'°C';
-      if(wxDesc)wxDesc.textContent=desc;
+    const lat=parseFloat(geoData[0].lat).toFixed(4);
+    const lon=parseFloat(geoData[0].lon).toFixed(4);
 
-      // 역지오코딩으로 지역명
-      try{
-        const geoRes=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ko`);
-        const geoData=await geoRes.json();
-        const addr=geoData.address;
-        const locName=addr.city||addr.town||addr.county||addr.state||'현재 위치';
-        if(wxLoc)wxLoc.textContent=locName;
-      }catch(e){if(wxLoc)wxLoc.textContent='현재 위치';}
+    // 좌표 → 날씨 (Open-Meteo 무료)
+    const wxUrl=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature,precipitation&timezone=Asia%2FSeoul&forecast_days=1`;
+    const wxRes=await fetch(wxUrl);
+    const wxData=await wxRes.json();
+    const c=wxData.current;
 
-      if(wxDet)wxDet.innerHTML=`
-        <div class="wx-detail-item"><div class="wd-label">체감온도</div><div class="wd-val">${Math.round(c.apparent_temperature)}°C</div></div>
-        <div class="wx-detail-item"><div class="wd-label">습도</div><div class="wd-val">${c.relative_humidity_2m}%</div></div>
-        <div class="wx-detail-item"><div class="wd-label">풍속</div><div class="wd-val">${c.wind_speed_10m}m/s</div></div>`;
+    const desc=wmoToKorean(c.weather_code);
+    const icon=WX_ICONS[desc]||'🌡️';
 
-      // 기상 특보 안내
-      const alerts=getWeatherAlert(c.weather_code,c.wind_speed_10m);
-      if(alerts){
-        const alertEl=document.createElement('div');
-        alertEl.style.cssText='margin-top:10px;padding:7px 10px;background:#fff0f0;border-radius:7px;font-size:11px;color:#991b1b;border:1px solid #fca5a5';
-        alertEl.textContent='⚠️ '+alerts;
-        wxDet.parentElement.appendChild(alertEl);
-      }
+    if(wxIcon)wxIcon.textContent=icon;
+    if(wxTemp)wxTemp.textContent=Math.round(c.temperature_2m)+'°C';
+    if(wxDesc)wxDesc.textContent=desc;
 
-    }catch(e){showWeatherError('날씨 정보를 불러오지 못했습니다');}
-  },err=>{
-    showWeatherError('위치 권한을 허용해주세요');
-  },{timeout:8000});
+    // 지역명 — 주소 앞부분만
+    const parts=addr.trim().split(' ');
+    const locShort=parts.slice(0,2).join(' ');
+    if(wxLoc)wxLoc.textContent=locShort;
+
+    if(wxDet)wxDet.innerHTML=`
+      <div class="wx-detail-item"><div class="wd-label">체감온도</div><div class="wd-val">${Math.round(c.apparent_temperature)}°C</div></div>
+      <div class="wx-detail-item"><div class="wd-label">습도</div><div class="wd-val">${c.relative_humidity_2m}%</div></div>
+      <div class="wx-detail-item"><div class="wd-label">풍속</div><div class="wd-val">${c.wind_speed_10m.toFixed(1)}m/s</div></div>
+      <div class="wx-detail-item"><div class="wd-label">강수량</div><div class="wd-val">${(c.precipitation||0).toFixed(1)}mm</div></div>`;
+
+    // 현장 안전 경보
+    const alertMsg=getWeatherAlert(c.weather_code,c.wind_speed_10m);
+    const existingAlert=document.getElementById('wx-alert');
+    if(existingAlert)existingAlert.remove();
+    if(alertMsg){
+      const alertEl=document.createElement('div');
+      alertEl.id='wx-alert';
+      alertEl.style.cssText='margin-top:10px;padding:8px 12px;background:#fff0f0;border-radius:8px;font-size:11px;color:#991b1b;border:1px solid #fca5a5;line-height:1.6';
+      alertEl.textContent='⚠️ '+alertMsg;
+      wxDet.parentElement.appendChild(alertEl);
+    }
+
+  }catch(e){
+    showWeatherError('날씨 정보를 불러오지 못했습니다');
+    console.error('Weather error:',e);
+  }
 }
 
 function wmoToKorean(code){
@@ -1518,17 +1533,19 @@ function wmoToKorean(code){
 
 function getWeatherAlert(code,wind){
   const alerts=[];
-  if(code>=95)alerts.push('천둥번개 — 고소작업·야외작업 중지 검토');
-  else if(code>=61)alerts.push('강수 — 미끄럼 방지·배수 상태 확인 필요');
-  else if(code>=71)alerts.push('강설 — 결빙 위험, 안전통로 확인 필요');
-  if(wind>=14)alerts.push('강풍('+wind+'m/s) — 고소작업 중지 검토 (10m/s↑)');
-  return alerts.join(' / ')||null;
+  if(code>=95)alerts.push('천둥번개 발생 — 고소작업·야외작업 즉시 중지 검토');
+  else if(code>=80)alerts.push('소나기 예보 — 미끄럼 방지 및 배수 상태 확인 필요');
+  else if(code>=71)alerts.push('강설 예보 — 결빙 위험, 안전통로·작업발판 확인 필요');
+  else if(code>=61)alerts.push('강수 예보 — 미끄럼 방지 조치 및 배수 상태 확인 필요');
+  if(wind>=10)alerts.push('풍속 '+wind.toFixed(1)+'m/s — 고소작업·타워크레인 운영 중지 검토');
+  return alerts.join('
+')||null;
 }
 
 function showWeatherError(msg){
   const wxDesc=document.getElementById('wx-desc');
   const wxTemp=document.getElementById('wx-temp');
-  if(wxDesc)wxDesc.textContent=msg;
+  if(wxDesc){wxDesc.textContent=msg;wxDesc.style.fontSize='12px';}
   if(wxTemp)wxTemp.textContent='--';
 }
 
