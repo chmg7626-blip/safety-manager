@@ -93,6 +93,40 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .s-badge.done{background:#dcfce7;color:#166534}
 .s-badge.todo{background:#f1f5f9;color:#94a3b8}
 
+/* ── TOP TWO CARDS ── */
+.top-two-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:600px){.top-two-grid{grid-template-columns:1fr}}
+
+.top-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;position:relative;overflow:hidden}
+.top-card.clickable{cursor:pointer;transition:transform .15s}
+.top-card.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 18px rgba(0,0,0,.08)}
+
+.tc-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.tc-icon{font-size:20px}
+.tc-title{font-size:13px;font-weight:500;color:var(--muted);flex:1}
+.tc-edit{font-size:11px;color:var(--g);font-weight:500;padding:3px 8px;border-radius:20px;background:var(--g3);border:1px solid var(--g4)}
+.tc-loc{font-size:11px;color:var(--light)}
+
+/* 출력현황 */
+.print-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7F77DD,#534AB7)}
+.print-numbers{display:flex;align-items:center;gap:0;height:64px}
+.print-row{flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pr-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.pr-num{font-size:36px;font-weight:700;color:var(--text);line-height:1;font-family:'IBM Plex Mono',monospace}
+.pr-unit{font-size:13px;color:var(--muted)}
+.print-divider{width:1px;height:50px;background:var(--border);flex-shrink:0}
+
+/* 날씨 */
+.weather-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#378ADD,#1D9E75)}
+.wx-main{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.wx-temp{font-size:42px;font-weight:700;color:var(--text);line-height:1;font-family:'IBM Plex Mono',monospace}
+.wx-desc{font-size:14px;color:var(--muted);font-weight:500}
+.wx-details{display:flex;gap:16px;flex-wrap:wrap}
+.wx-detail-item{display:flex;flex-direction:column;gap:2px}
+.wx-detail-item .wd-label{font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.04em}
+.wx-detail-item .wd-val{font-size:13px;font-weight:500;color:var(--text)}
+.wx-err{font-size:12px;color:var(--muted);line-height:1.6}
+
 /* ── STAT MODAL ── */
 .stat-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px}
 .stat-modal-bg.show{display:flex}
@@ -514,41 +548,47 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           </div>
         </div>
 
-        <!-- ② 이번달 현황 통계 -->
-        <div class="stat-grid stat-grid-5">
-          <div class="stat-card purple clickable" onclick="openStatModal('print')">
-            <div class="s-icon">🗂️</div>
-            <div class="s-num" id="st-all">0</div>
-            <div class="s-lbl">출력현황</div>
-            <div class="s-sub" id="st-print-sub">관리자 0명 · 근로자 0명</div>
+        <!-- ② 상단 2카드: 출력현황 + 날씨 -->
+        <div class="top-two-grid">
+
+          <!-- 출력현황 카드 -->
+          <div class="top-card print-card clickable" onclick="openStatModal('print')">
+            <div class="tc-header">
+              <span class="tc-icon">🗂️</span>
+              <span class="tc-title">출력현황</span>
+              <span class="tc-edit">수정 ✏️</span>
+            </div>
+            <div class="print-numbers" id="print-numbers">
+              <div class="print-row">
+                <span class="pr-label">관리자</span>
+                <span class="pr-num" id="pr-managers">0</span>
+                <span class="pr-unit">명</span>
+              </div>
+              <div class="print-divider"></div>
+              <div class="print-row">
+                <span class="pr-label">근로자</span>
+                <span class="pr-num" id="pr-workers">0</span>
+                <span class="pr-unit">명</span>
+              </div>
+            </div>
           </div>
-          <div class="stat-card green clickable" onclick="openStatModal('tbm')">
-            <div class="s-icon">📋</div>
-            <div class="s-num" id="st-tbm">0</div>
-            <div class="s-lbl">TBM 일지</div>
-            <div class="s-badge" id="badge-tbm"></div>
-          </div>
-          <div class="stat-card blue clickable" onclick="openStatModal('check')">
-            <div class="s-icon">🔍</div>
-            <div class="s-num" id="st-edu">0</div>
-            <div class="s-lbl">일일안전점검</div>
-            <div class="s-badge" id="badge-check"></div>
-          </div>
-          <div class="stat-card amber clickable" onclick="openStatModal('patrol')">
-            <div class="s-icon">🚶</div>
-            <div class="s-num" id="st-risk">0</div>
-            <div class="s-lbl">작업장순회점검</div>
-            <div class="s-badge" id="badge-patrol"></div>
-          </div>
-          <div class="stat-card red clickable" onclick="openStatModal('accident')">
-            <div class="s-icon">🚨</div>
-            <div class="s-num" id="st-acc">0</div>
-            <div class="s-lbl">사고건수</div>
-            <div class="s-badge" id="badge-accident"></div>
+
+          <!-- 날씨 카드 -->
+          <div class="top-card weather-card">
+            <div class="tc-header">
+              <span class="tc-icon" id="wx-icon">🌤️</span>
+              <span class="tc-title">오늘 날씨</span>
+              <span class="tc-loc" id="wx-loc">위치 확인 중...</span>
+            </div>
+            <div class="wx-main">
+              <div class="wx-temp" id="wx-temp">--</div>
+              <div class="wx-desc" id="wx-desc">날씨 불러오는 중...</div>
+            </div>
+            <div class="wx-details" id="wx-details"></div>
           </div>
         </div>
 
-        <!-- 통계 모달 -->
+        <!-- 출력현황 모달 -->
         <div class="stat-modal-bg" id="stat-modal-bg" onclick="closeStatModal()">
           <div class="stat-modal" onclick="event.stopPropagation()">
             <div class="sm-head">
@@ -930,6 +970,7 @@ function initApp() {
   renderChecks('permit-checks',PERMIT_CHK);
   setTimeout(renderCal, 100);
   refreshStatBadges();
+  loadWeather();
   addRiskRow();addRiskRow();addRiskRow();
   loadCounts();
   go('home',document.querySelector('.nav-btn'));
@@ -1292,25 +1333,10 @@ function saveDailyData(data){
 
 function refreshStatBadges(){
   const d=getDailyData();
-  const today=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric'});
-
-  ['tbm','check','patrol','accident'].forEach(k=>{
-    const el=document.getElementById('badge-'+k);
-    if(!el)return;
-    if(d[k]){
-      el.textContent='✓ 완료';el.className='s-badge done';
-    } else {
-      el.textContent='미완료';el.className='s-badge todo';
-    }
-  });
-
-  // 출력현황 서브텍스트
-  const sub=document.getElementById('st-print-sub');
-  if(sub)sub.textContent='관리자 '+(d.managers||0)+'명 · 근로자 '+(d.workers||0)+'명';
-
-  // 사고건수 숫자
-  const accEl=document.getElementById('st-acc');
-  if(accEl)accEl.textContent=d.accidentCount||0;
+  const mEl=document.getElementById('pr-managers');
+  const wEl=document.getElementById('pr-workers');
+  if(mEl)mEl.textContent=d.managers||0;
+  if(wEl)wEl.textContent=d.workers||0;
 }
 
 function openStatModal(type){
@@ -1405,6 +1431,105 @@ function saveStatPrint(){
   refreshStatBadges();
   closeStatModal();
   toast('✅ 인원 현황이 저장되었습니다');
+}
+
+/* ════════════════════════
+   WEATHER — 기상청 API
+   ════════════════════════ */
+const WX_ICONS={
+  '맑음':'☀️','구름조금':'🌤️','구름많음':'⛅','흐림':'☁️',
+  '비':'🌧️','눈':'❄️','눈비':'🌨️','안개':'🌫️','천둥번개':'⛈️',
+  '소나기':'🌦️','황사':'😶‍🌫️','강풍':'💨'
+};
+
+async function loadWeather(){
+  const wxIcon=document.getElementById('wx-icon');
+  const wxTemp=document.getElementById('wx-temp');
+  const wxDesc=document.getElementById('wx-desc');
+  const wxLoc=document.getElementById('wx-loc');
+  const wxDet=document.getElementById('wx-details');
+  if(!wxTemp)return;
+
+  // 위치 정보 요청
+  if(!navigator.geolocation){
+    showWeatherError('위치 정보를 지원하지 않는 브라우저입니다');return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude.toFixed(2);
+    const lon=pos.coords.longitude.toFixed(2);
+
+    try{
+      // Open-Meteo 무료 API (API 키 불필요)
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature&timezone=Asia%2FSeoul&forecast_days=1`;
+      const res=await fetch(url);
+      const data=await res.json();
+      const c=data.current;
+
+      const desc=wmoToKorean(c.weather_code);
+      const icon=WX_ICONS[desc]||'🌡️';
+
+      if(wxIcon)wxIcon.textContent=icon;
+      if(wxTemp)wxTemp.textContent=Math.round(c.temperature_2m)+'°C';
+      if(wxDesc)wxDesc.textContent=desc;
+
+      // 역지오코딩으로 지역명
+      try{
+        const geoRes=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ko`);
+        const geoData=await geoRes.json();
+        const addr=geoData.address;
+        const locName=addr.city||addr.town||addr.county||addr.state||'현재 위치';
+        if(wxLoc)wxLoc.textContent=locName;
+      }catch(e){if(wxLoc)wxLoc.textContent='현재 위치';}
+
+      if(wxDet)wxDet.innerHTML=`
+        <div class="wx-detail-item"><div class="wd-label">체감온도</div><div class="wd-val">${Math.round(c.apparent_temperature)}°C</div></div>
+        <div class="wx-detail-item"><div class="wd-label">습도</div><div class="wd-val">${c.relative_humidity_2m}%</div></div>
+        <div class="wx-detail-item"><div class="wd-label">풍속</div><div class="wd-val">${c.wind_speed_10m}m/s</div></div>`;
+
+      // 기상 특보 안내
+      const alerts=getWeatherAlert(c.weather_code,c.wind_speed_10m);
+      if(alerts){
+        const alertEl=document.createElement('div');
+        alertEl.style.cssText='margin-top:10px;padding:7px 10px;background:#fff0f0;border-radius:7px;font-size:11px;color:#991b1b;border:1px solid #fca5a5';
+        alertEl.textContent='⚠️ '+alerts;
+        wxDet.parentElement.appendChild(alertEl);
+      }
+
+    }catch(e){showWeatherError('날씨 정보를 불러오지 못했습니다');}
+  },err=>{
+    showWeatherError('위치 권한을 허용해주세요');
+  },{timeout:8000});
+}
+
+function wmoToKorean(code){
+  if(code===0)return '맑음';
+  if(code<=2)return '구름조금';
+  if(code<=3)return '구름많음';
+  if(code<=49)return '안개';
+  if(code<=59)return '비';
+  if(code<=69)return '눈비';
+  if(code<=79)return '눈';
+  if(code<=82)return '소나기';
+  if(code<=84)return '눈';
+  if(code<=99)return '천둥번개';
+  return '흐림';
+}
+
+function getWeatherAlert(code,wind){
+  const alerts=[];
+  if(code>=95)alerts.push('천둥번개 — 고소작업·야외작업 중지 검토');
+  else if(code>=61)alerts.push('강수 — 미끄럼 방지·배수 상태 확인 필요');
+  else if(code>=71)alerts.push('강설 — 결빙 위험, 안전통로 확인 필요');
+  if(wind>=14)alerts.push('강풍('+wind+'m/s) — 고소작업 중지 검토 (10m/s↑)');
+  return alerts.join(' / ')||null;
+}
+
+function showWeatherError(msg){
+  const wxDesc=document.getElementById('wx-desc');
+  const wxTemp=document.getElementById('wx-temp');
+  if(wxDesc)wxDesc.textContent=msg;
+  if(wxTemp)wxTemp.textContent='--';
 }
 
 function saveStatDaily(type,done){
