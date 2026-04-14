@@ -132,6 +132,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .cal-event-item .ev-del{color:var(--color-text-secondary);cursor:pointer;font-size:18px;padding:0 2px;border:none;background:none;line-height:1}
 .cal-event-item .ev-del:hover{color:#e03e3e}
 .cal-no-event{font-size:12px;color:var(--color-text-secondary);text-align:center;padding:16px;line-height:1.8}
+.duty-section-label{font-size:12px;font-weight:500;padding:8px 14px;border-radius:var(--border-radius-md);border:.5px solid;margin-bottom:12px}
 
 /* ── SITE BANNER ── */
 .site-banner{background:linear-gradient(135deg,#0f1923 0%,#1a2d3f 100%);border-radius:var(--border-radius-lg);padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -502,77 +503,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div class="stat-card red"><div class="s-icon">🚨</div><div class="s-num" id="st-acc">0</div><div class="s-lbl">사고건수</div></div>
         </div>
 
-        <!-- ③ 안전점검 주기 가이드 + 캘린더 -->
+        <!-- ③ 캘린더 -->
         <div class="card">
-          <div class="card-head" style="flex-wrap:wrap;gap:8px">
+          <div class="card-head">
             <h3>📅 일정 관리</h3>
-            <div class="duty-tabs">
-              <button class="duty-tab active" onclick="showDuty('daily',this)">매일</button>
-              <button class="duty-tab" onclick="showDuty('weekly',this)">매주</button>
-              <button class="duty-tab" onclick="showDuty('monthly',this)">매달</button>
-              <button class="duty-tab" onclick="showDuty('quarter',this)">분기별</button>
-              <button class="duty-tab" onclick="showDuty('half',this)">반기별</button>
+            <div class="cal-nav-row" style="margin:0">
+              <button class="btn btn-sm" onclick="calPrev()">〈</button>
+              <span id="cal-title" style="font-size:14px;font-weight:500;min-width:100px;text-align:center;color:var(--color-text-primary)"></span>
+              <button class="btn btn-sm" onclick="calNext()">〉</button>
+              <button class="btn btn-sm" onclick="calGoToday()">오늘</button>
             </div>
-          </div>
-
-          <!-- 점검 주기별 내용 -->
-          <div id="duty-daily" class="duty-panel">
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot g"></span>TBM (작업 전 안전점검 회의) 실시</div>
-              <div class="duty-item"><span class="duty-dot g"></span>현장 순회점검 (일일안전점검) 실시</div>
-              <div class="duty-item"><span class="duty-dot g"></span>작업허가서 발급 (위험작업 해당 시)</div>
-              <div class="duty-item"><span class="duty-dot g"></span>안전보호구 착용 상태 확인</div>
-              <div class="duty-item"><span class="duty-dot g"></span>날씨·기상 조건 확인 및 대응</div>
-              <div class="duty-item"><span class="duty-dot g"></span>신규 투입 근로자 안전교육 확인</div>
-            </div>
-          </div>
-          <div id="duty-weekly" class="duty-panel" style="display:none">
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot b"></span>주간 안전점검 회의 (노사협의체)</div>
-              <div class="duty-item"><span class="duty-dot b"></span>위험성평가 결과 검토 및 보완</div>
-              <div class="duty-item"><span class="duty-dot b"></span>안전보호구 지급·교체 여부 확인</div>
-              <div class="duty-item"><span class="duty-dot b"></span>가설구조물·비계 상태 점검</div>
-              <div class="duty-item"><span class="duty-dot b"></span>아차사고 발생 여부 확인 및 기록</div>
-              <div class="duty-item"><span class="duty-dot b"></span>협력업체 안전서류 징구 확인</div>
-            </div>
-          </div>
-          <div id="duty-monthly" class="duty-panel" style="display:none">
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot a"></span>근로자 정기 안전교육 (매분기 6h↑)</div>
-              <div class="duty-item"><span class="duty-dot a"></span>정기 안전점검 실시 및 기록</div>
-              <div class="duty-item"><span class="duty-dot a"></span>산업안전보건위원회 회의 개최</div>
-              <div class="duty-item"><span class="duty-dot a"></span>안전관리 계획 이행 실적 점검</div>
-              <div class="duty-item"><span class="duty-dot a"></span>장비·기계 자체검사 기록 확인</div>
-              <div class="duty-item"><span class="duty-dot a"></span>비상대피 훈련 계획 수립</div>
-            </div>
-          </div>
-          <div id="duty-quarter" class="duty-panel" style="display:none">
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot p"></span>위험성평가 정기 실시 (연 1회 이상)</div>
-              <div class="duty-item"><span class="duty-dot p"></span>관리감독자 정기교육 (연 16h↑)</div>
-              <div class="duty-item"><span class="duty-dot p"></span>근로자 정기교육 이수 현황 확인</div>
-              <div class="duty-item"><span class="duty-dot p"></span>안전보건 목표 달성도 평가</div>
-              <div class="duty-item"><span class="duty-dot p"></span>산재 발생 현황 분석 및 보고</div>
-              <div class="duty-item"><span class="duty-dot p"></span>법정 안전검사 대상 장비 점검</div>
-            </div>
-          </div>
-          <div id="duty-half" class="duty-panel" style="display:none">
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot r"></span>작업환경측정 실시 (유해인자 발생 시)</div>
-              <div class="duty-item"><span class="duty-dot r"></span>근로자 건강검진 실시 현황 확인</div>
-              <div class="duty-item"><span class="duty-dot r"></span>안전보건관리규정 검토 및 개정</div>
-              <div class="duty-item"><span class="duty-dot r"></span>비상대응계획 훈련 및 평가</div>
-              <div class="duty-item"><span class="duty-dot r"></span>유해·위험기계 정기검사 신청</div>
-              <div class="duty-item"><span class="duty-dot r"></span>안전보건 경영 성과 중간 점검</div>
-            </div>
-          </div>
-
-          <!-- 캘린더 -->
-          <div class="cal-nav-row">
-            <button class="btn btn-sm" onclick="calPrev()">〈</button>
-            <span id="cal-title" style="font-size:14px;font-weight:500;min-width:100px;text-align:center;color:var(--color-text-primary)"></span>
-            <button class="btn btn-sm" onclick="calNext()">〉</button>
-            <button class="btn btn-sm" onclick="calGoToday()">오늘</button>
           </div>
           <div class="cal-day-names"></div>
           <div id="cal-grid" class="cal-grid-wrap"></div>
@@ -589,6 +529,90 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
           <!-- 이번달 일정 목록 -->
           <div id="cal-events-today" class="cal-events-list"></div>
+        </div>
+
+        <!-- ④ 안전관리 주기별 업무 -->
+        <div class="card">
+          <div class="card-head">
+            <h3>📌 안전관리 주기별 업무</h3>
+            <div class="duty-tabs">
+              <button class="duty-tab active" onclick="showDuty('daily',this)">매일</button>
+              <button class="duty-tab" onclick="showDuty('weekly',this)">매주</button>
+              <button class="duty-tab" onclick="showDuty('monthly',this)">매달</button>
+              <button class="duty-tab" onclick="showDuty('quarter',this)">분기별</button>
+              <button class="duty-tab" onclick="showDuty('half',this)">반기별</button>
+            </div>
+          </div>
+
+          <div id="duty-daily" class="duty-panel">
+            <div class="duty-section-label" style="background:#E1F5EE;color:#085041;border-color:#9FE1CB">매일 해야 할 안전관리 업무</div>
+            <div class="duty-grid">
+              <div class="duty-item"><span class="duty-dot g"></span>TBM (작업 전 안전점검 회의) 실시</div>
+              <div class="duty-item"><span class="duty-dot g"></span>현장 순회점검 (일일안전점검) 실시·기록</div>
+              <div class="duty-item"><span class="duty-dot g"></span>작업허가서 발급 (위험작업 해당 시)</div>
+              <div class="duty-item"><span class="duty-dot g"></span>안전보호구 착용 상태 전원 확인</div>
+              <div class="duty-item"><span class="duty-dot g"></span>날씨·기상 조건 확인 및 대응 조치</div>
+              <div class="duty-item"><span class="duty-dot g"></span>신규 투입 근로자 안전교육 이수 확인</div>
+              <div class="duty-item"><span class="duty-dot g"></span>위험구역 출입통제 및 표지 상태 확인</div>
+              <div class="duty-item"><span class="duty-dot g"></span>아차사고 발생 시 즉시 기록·보고</div>
+            </div>
+          </div>
+
+          <div id="duty-weekly" class="duty-panel" style="display:none">
+            <div class="duty-section-label" style="background:#E6F1FB;color:#0C447C;border-color:#85B7EB">매주 해야 할 안전관리 업무</div>
+            <div class="duty-grid">
+              <div class="duty-item"><span class="duty-dot b"></span>주간 안전점검 회의 개최 및 기록</div>
+              <div class="duty-item"><span class="duty-dot b"></span>위험성평가 결과 검토 및 보완</div>
+              <div class="duty-item"><span class="duty-dot b"></span>안전보호구 지급·교체 여부 확인</div>
+              <div class="duty-item"><span class="duty-dot b"></span>가설구조물·비계·거푸집 상태 점검</div>
+              <div class="duty-item"><span class="duty-dot b"></span>협력업체 안전관리 서류 징구 확인</div>
+              <div class="duty-item"><span class="duty-dot b"></span>이번 주 위험작업 일정 사전 검토</div>
+              <div class="duty-item"><span class="duty-dot b"></span>안전표지판·경보장치 작동 상태 확인</div>
+              <div class="duty-item"><span class="duty-dot b"></span>화재예방 및 소화기 위치·상태 점검</div>
+            </div>
+          </div>
+
+          <div id="duty-monthly" class="duty-panel" style="display:none">
+            <div class="duty-section-label" style="background:#FAEEDA;color:#633806;border-color:#EF9F27">매달 해야 할 안전관리 업무</div>
+            <div class="duty-grid">
+              <div class="duty-item"><span class="duty-dot a"></span>근로자 정기 안전교육 실시 (매분기 6h↑)</div>
+              <div class="duty-item"><span class="duty-dot a"></span>정기 안전점검 실시 및 기록·보존</div>
+              <div class="duty-item"><span class="duty-dot a"></span>산업안전보건위원회 회의 개최·기록</div>
+              <div class="duty-item"><span class="duty-dot a"></span>안전관리 계획 이행 실적 점검</div>
+              <div class="duty-item"><span class="duty-dot a"></span>건설장비·기계 자체검사 실시·기록</div>
+              <div class="duty-item"><span class="duty-dot a"></span>비상대피 훈련 계획 수립 및 실시</div>
+              <div class="duty-item"><span class="duty-dot a"></span>이달 산재 발생 현황 분석·보고</div>
+              <div class="duty-item"><span class="duty-dot a"></span>안전보건 예산 집행 현황 검토</div>
+            </div>
+          </div>
+
+          <div id="duty-quarter" class="duty-panel" style="display:none">
+            <div class="duty-section-label" style="background:#EEEDFE;color:#3C3489;border-color:#AFA9EC">분기별 해야 할 안전관리 업무</div>
+            <div class="duty-grid">
+              <div class="duty-item"><span class="duty-dot p"></span>위험성평가 정기 실시 (연 1회 이상)</div>
+              <div class="duty-item"><span class="duty-dot p"></span>관리감독자 정기교육 이수 확인 (연 16h↑)</div>
+              <div class="duty-item"><span class="duty-dot p"></span>근로자 정기교육 이수 현황 전체 확인</div>
+              <div class="duty-item"><span class="duty-dot p"></span>안전보건 목표 달성도 분기 평가</div>
+              <div class="duty-item"><span class="duty-dot p"></span>법정 안전검사 대상 장비 신청·수검</div>
+              <div class="duty-item"><span class="duty-dot p"></span>도급업체 합동 안전점검 실시</div>
+              <div class="duty-item"><span class="duty-dot p"></span>산재보험 가입 현황 및 신고 확인</div>
+              <div class="duty-item"><span class="duty-dot p"></span>안전보건 개선계획 이행 실적 평가</div>
+            </div>
+          </div>
+
+          <div id="duty-half" class="duty-panel" style="display:none">
+            <div class="duty-section-label" style="background:#FCEBEB;color:#791F1F;border-color:#F09595">반기별 해야 할 안전관리 업무</div>
+            <div class="duty-grid">
+              <div class="duty-item"><span class="duty-dot r"></span>작업환경측정 실시 (6개월마다, 해당 시)</div>
+              <div class="duty-item"><span class="duty-dot r"></span>근로자 일반·특수 건강검진 현황 확인</div>
+              <div class="duty-item"><span class="duty-dot r"></span>안전보건관리규정 검토 및 개정</div>
+              <div class="duty-item"><span class="duty-dot r"></span>비상대응계획 전체 훈련 및 평가</div>
+              <div class="duty-item"><span class="duty-dot r"></span>유해·위험기계 정기검사 신청·수검</div>
+              <div class="duty-item"><span class="duty-dot r"></span>안전보건 경영 성과 반기 점검·보고</div>
+              <div class="duty-item"><span class="duty-dot r"></span>중대재해처벌법 의무 이행 현황 점검</div>
+              <div class="duty-item"><span class="duty-dot r"></span>안전보건 예산 하반기 계획 수립</div>
+            </div>
+          </div>
         </div>
 
         <div class="alert alert-red"><b>⚡ 중대재해 즉시 신고 (산안법 제54조)</b><br>사망 또는 3일 이상 휴업 재해 → <b>즉시</b> 관할 지방고용노동관서 신고 / 산업재해 조사표 <b>1개월 내</b> 제출</div>
