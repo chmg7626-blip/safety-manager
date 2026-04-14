@@ -86,6 +86,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:rgba(255,255,255,.2);line-height:1.6}
 
 /* ── STAT 5개 ── */
+.stat-card.clickable{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.stat-card.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.s-sub{font-size:10px;color:var(--color-text-secondary);margin-top:4px;line-height:1.4}
+.s-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:5px;min-height:18px}
+.s-badge.done{background:#dcfce7;color:#166534}
+.s-badge.todo{background:#f1f5f9;color:#94a3b8}
+
+/* ── STAT MODAL ── */
+.stat-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px}
+.stat-modal-bg.show{display:flex}
+.stat-modal{background:var(--color-background-primary);border-radius:16px;padding:24px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto}
+.sm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:.5px solid var(--color-border-tertiary)}
+.sm-head h3{font-size:15px;font-weight:500}
+.sm-field{margin-bottom:12px}
+.sm-field label{display:block;font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.sm-field input,.sm-field select,.sm-field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13px;font-family:inherit;color:var(--color-text-primary);background:#fff}
+.sm-field input:focus,.sm-field select:focus,.sm-field textarea:focus{outline:none;border-color:var(--g)}
+.sm-field textarea{resize:vertical;min-height:64px}
+.sm-done-banner{background:#E1F5EE;border:.5px solid #9FE1CB;border-radius:var(--border-radius-md);padding:12px 14px;text-align:center;color:#085041;font-size:13px;font-weight:500;margin-bottom:12px}
+.sm-done-banner span{font-size:20px;display:block;margin-bottom:4px}
 .stat-grid-5{grid-template-columns:repeat(5,1fr)!important}
 .stat-card.purple::before{background:#7F77DD}
 @media(max-width:900px){.stat-grid-5{grid-template-columns:repeat(3,1fr)!important}}
@@ -496,11 +516,47 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
         <!-- ② 이번달 현황 통계 -->
         <div class="stat-grid stat-grid-5">
-          <div class="stat-card purple"><div class="s-icon">🗂️</div><div class="s-num" id="st-all">0</div><div class="s-lbl">출력현황</div></div>
-          <div class="stat-card green"><div class="s-icon">📋</div><div class="s-num" id="st-tbm">0</div><div class="s-lbl">TBM 일지</div></div>
-          <div class="stat-card amber"><div class="s-icon">⚠️</div><div class="s-num" id="st-risk">0</div><div class="s-lbl">위험성평가</div></div>
-          <div class="stat-card blue"><div class="s-icon">🔍</div><div class="s-num" id="st-edu">0</div><div class="s-lbl">일일안전점검</div></div>
-          <div class="stat-card red"><div class="s-icon">🚨</div><div class="s-num" id="st-acc">0</div><div class="s-lbl">사고건수</div></div>
+          <div class="stat-card purple clickable" onclick="openStatModal('print')">
+            <div class="s-icon">🗂️</div>
+            <div class="s-num" id="st-all">0</div>
+            <div class="s-lbl">출력현황</div>
+            <div class="s-sub" id="st-print-sub">관리자 0명 · 근로자 0명</div>
+          </div>
+          <div class="stat-card green clickable" onclick="openStatModal('tbm')">
+            <div class="s-icon">📋</div>
+            <div class="s-num" id="st-tbm">0</div>
+            <div class="s-lbl">TBM 일지</div>
+            <div class="s-badge" id="badge-tbm"></div>
+          </div>
+          <div class="stat-card blue clickable" onclick="openStatModal('check')">
+            <div class="s-icon">🔍</div>
+            <div class="s-num" id="st-edu">0</div>
+            <div class="s-lbl">일일안전점검</div>
+            <div class="s-badge" id="badge-check"></div>
+          </div>
+          <div class="stat-card amber clickable" onclick="openStatModal('patrol')">
+            <div class="s-icon">🚶</div>
+            <div class="s-num" id="st-risk">0</div>
+            <div class="s-lbl">작업장순회점검</div>
+            <div class="s-badge" id="badge-patrol"></div>
+          </div>
+          <div class="stat-card red clickable" onclick="openStatModal('accident')">
+            <div class="s-icon">🚨</div>
+            <div class="s-num" id="st-acc">0</div>
+            <div class="s-lbl">사고건수</div>
+            <div class="s-badge" id="badge-accident"></div>
+          </div>
+        </div>
+
+        <!-- 통계 모달 -->
+        <div class="stat-modal-bg" id="stat-modal-bg" onclick="closeStatModal()">
+          <div class="stat-modal" onclick="event.stopPropagation()">
+            <div class="sm-head">
+              <h3 id="sm-title">입력</h3>
+              <button onclick="closeStatModal()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary);padding:0 4px">×</button>
+            </div>
+            <div id="sm-body"></div>
+          </div>
         </div>
 
         <!-- ③ 캘린더 -->
@@ -531,89 +587,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div id="cal-events-today" class="cal-events-list"></div>
         </div>
 
-        <!-- ④ 안전관리 주기별 업무 -->
-        <div class="card">
-          <div class="card-head">
-            <h3>📌 안전관리 주기별 업무</h3>
-            <div class="duty-tabs">
-              <button class="duty-tab active" onclick="showDuty('daily',this)">매일</button>
-              <button class="duty-tab" onclick="showDuty('weekly',this)">매주</button>
-              <button class="duty-tab" onclick="showDuty('monthly',this)">매달</button>
-              <button class="duty-tab" onclick="showDuty('quarter',this)">분기별</button>
-              <button class="duty-tab" onclick="showDuty('half',this)">반기별</button>
-            </div>
-          </div>
 
-          <div id="duty-daily" class="duty-panel">
-            <div class="duty-section-label" style="background:#E1F5EE;color:#085041;border-color:#9FE1CB">매일 해야 할 안전관리 업무</div>
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot g"></span>TBM (작업 전 안전점검 회의) 실시</div>
-              <div class="duty-item"><span class="duty-dot g"></span>현장 순회점검 (일일안전점검) 실시·기록</div>
-              <div class="duty-item"><span class="duty-dot g"></span>작업허가서 발급 (위험작업 해당 시)</div>
-              <div class="duty-item"><span class="duty-dot g"></span>안전보호구 착용 상태 전원 확인</div>
-              <div class="duty-item"><span class="duty-dot g"></span>날씨·기상 조건 확인 및 대응 조치</div>
-              <div class="duty-item"><span class="duty-dot g"></span>신규 투입 근로자 안전교육 이수 확인</div>
-              <div class="duty-item"><span class="duty-dot g"></span>위험구역 출입통제 및 표지 상태 확인</div>
-              <div class="duty-item"><span class="duty-dot g"></span>아차사고 발생 시 즉시 기록·보고</div>
-            </div>
-          </div>
-
-          <div id="duty-weekly" class="duty-panel" style="display:none">
-            <div class="duty-section-label" style="background:#E6F1FB;color:#0C447C;border-color:#85B7EB">매주 해야 할 안전관리 업무</div>
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot b"></span>주간 안전점검 회의 개최 및 기록</div>
-              <div class="duty-item"><span class="duty-dot b"></span>위험성평가 결과 검토 및 보완</div>
-              <div class="duty-item"><span class="duty-dot b"></span>안전보호구 지급·교체 여부 확인</div>
-              <div class="duty-item"><span class="duty-dot b"></span>가설구조물·비계·거푸집 상태 점검</div>
-              <div class="duty-item"><span class="duty-dot b"></span>협력업체 안전관리 서류 징구 확인</div>
-              <div class="duty-item"><span class="duty-dot b"></span>이번 주 위험작업 일정 사전 검토</div>
-              <div class="duty-item"><span class="duty-dot b"></span>안전표지판·경보장치 작동 상태 확인</div>
-              <div class="duty-item"><span class="duty-dot b"></span>화재예방 및 소화기 위치·상태 점검</div>
-            </div>
-          </div>
-
-          <div id="duty-monthly" class="duty-panel" style="display:none">
-            <div class="duty-section-label" style="background:#FAEEDA;color:#633806;border-color:#EF9F27">매달 해야 할 안전관리 업무</div>
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot a"></span>근로자 정기 안전교육 실시 (매분기 6h↑)</div>
-              <div class="duty-item"><span class="duty-dot a"></span>정기 안전점검 실시 및 기록·보존</div>
-              <div class="duty-item"><span class="duty-dot a"></span>산업안전보건위원회 회의 개최·기록</div>
-              <div class="duty-item"><span class="duty-dot a"></span>안전관리 계획 이행 실적 점검</div>
-              <div class="duty-item"><span class="duty-dot a"></span>건설장비·기계 자체검사 실시·기록</div>
-              <div class="duty-item"><span class="duty-dot a"></span>비상대피 훈련 계획 수립 및 실시</div>
-              <div class="duty-item"><span class="duty-dot a"></span>이달 산재 발생 현황 분석·보고</div>
-              <div class="duty-item"><span class="duty-dot a"></span>안전보건 예산 집행 현황 검토</div>
-            </div>
-          </div>
-
-          <div id="duty-quarter" class="duty-panel" style="display:none">
-            <div class="duty-section-label" style="background:#EEEDFE;color:#3C3489;border-color:#AFA9EC">분기별 해야 할 안전관리 업무</div>
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot p"></span>위험성평가 정기 실시 (연 1회 이상)</div>
-              <div class="duty-item"><span class="duty-dot p"></span>관리감독자 정기교육 이수 확인 (연 16h↑)</div>
-              <div class="duty-item"><span class="duty-dot p"></span>근로자 정기교육 이수 현황 전체 확인</div>
-              <div class="duty-item"><span class="duty-dot p"></span>안전보건 목표 달성도 분기 평가</div>
-              <div class="duty-item"><span class="duty-dot p"></span>법정 안전검사 대상 장비 신청·수검</div>
-              <div class="duty-item"><span class="duty-dot p"></span>도급업체 합동 안전점검 실시</div>
-              <div class="duty-item"><span class="duty-dot p"></span>산재보험 가입 현황 및 신고 확인</div>
-              <div class="duty-item"><span class="duty-dot p"></span>안전보건 개선계획 이행 실적 평가</div>
-            </div>
-          </div>
-
-          <div id="duty-half" class="duty-panel" style="display:none">
-            <div class="duty-section-label" style="background:#FCEBEB;color:#791F1F;border-color:#F09595">반기별 해야 할 안전관리 업무</div>
-            <div class="duty-grid">
-              <div class="duty-item"><span class="duty-dot r"></span>작업환경측정 실시 (6개월마다, 해당 시)</div>
-              <div class="duty-item"><span class="duty-dot r"></span>근로자 일반·특수 건강검진 현황 확인</div>
-              <div class="duty-item"><span class="duty-dot r"></span>안전보건관리규정 검토 및 개정</div>
-              <div class="duty-item"><span class="duty-dot r"></span>비상대응계획 전체 훈련 및 평가</div>
-              <div class="duty-item"><span class="duty-dot r"></span>유해·위험기계 정기검사 신청·수검</div>
-              <div class="duty-item"><span class="duty-dot r"></span>안전보건 경영 성과 반기 점검·보고</div>
-              <div class="duty-item"><span class="duty-dot r"></span>중대재해처벌법 의무 이행 현황 점검</div>
-              <div class="duty-item"><span class="duty-dot r"></span>안전보건 예산 하반기 계획 수립</div>
-            </div>
-          </div>
-        </div>
 
         <div class="alert alert-red"><b>⚡ 중대재해 즉시 신고 (산안법 제54조)</b><br>사망 또는 3일 이상 휴업 재해 → <b>즉시</b> 관할 지방고용노동관서 신고 / 산업재해 조사표 <b>1개월 내</b> 제출</div>
       </div>
@@ -955,6 +929,7 @@ function initApp() {
   renderChecks('tbm-checks',TBM_CHK);
   renderChecks('permit-checks',PERMIT_CHK);
   setTimeout(renderCal, 100);
+  refreshStatBadges();
   addRiskRow();addRiskRow();addRiskRow();
   loadCounts();
   go('home',document.querySelector('.nav-btn'));
@@ -1297,6 +1272,163 @@ function showDuty(type,btn){
   const el=document.getElementById('duty-'+type);
   if(el)el.style.display='block';
   if(btn)btn.classList.add('active');
+}
+
+/* ════════════════════════
+   STAT CARDS — 오늘 현황
+   ════════════════════════ */
+const TODAY_KEY = ()=>'daily_'+new Date().toISOString().split('T')[0];
+
+function getDailyData(){
+  const key=TODAY_KEY();
+  const saved=JSON.parse(localStorage.getItem(key)||'null');
+  if(!saved) return {tbm:false,check:false,patrol:false,accident:false,accidentCount:0,accidentNote:'',managers:0,workers:0,tbmNote:'',checkNote:'',patrolNote:''};
+  return saved;
+}
+
+function saveDailyData(data){
+  localStorage.setItem(TODAY_KEY(), JSON.stringify(data));
+}
+
+function refreshStatBadges(){
+  const d=getDailyData();
+  const today=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric'});
+
+  ['tbm','check','patrol','accident'].forEach(k=>{
+    const el=document.getElementById('badge-'+k);
+    if(!el)return;
+    if(d[k]){
+      el.textContent='✓ 완료';el.className='s-badge done';
+    } else {
+      el.textContent='미완료';el.className='s-badge todo';
+    }
+  });
+
+  // 출력현황 서브텍스트
+  const sub=document.getElementById('st-print-sub');
+  if(sub)sub.textContent='관리자 '+(d.managers||0)+'명 · 근로자 '+(d.workers||0)+'명';
+
+  // 사고건수 숫자
+  const accEl=document.getElementById('st-acc');
+  if(accEl)accEl.textContent=d.accidentCount||0;
+}
+
+function openStatModal(type){
+  const d=getDailyData();
+  const bg=document.getElementById('stat-modal-bg');
+  const title=document.getElementById('sm-title');
+  const body=document.getElementById('sm-body');
+  if(!bg||!title||!body)return;
+
+  if(type==='print'){
+    title.textContent='출력현황 — 인원 현황';
+    body.innerHTML=`
+      <div class="sm-field"><label>관리자 인원 (명)</label><input type="number" id="sm-managers" value="${d.managers||0}" min="0"></div>
+      <div class="sm-field"><label>근로자 인원 (명)</label><input type="number" id="sm-workers" value="${d.workers||0}" min="0"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveStatPrint()">저장</button>
+        <button class="btn" onclick="closeStatModal()">취소</button>
+      </div>`;
+  } else if(type==='tbm'){
+    title.textContent='📋 TBM 일지 — 오늘 현황';
+    const done=d.tbm;
+    body.innerHTML=`
+      ${done?'<div class="sm-done-banner"><span>✅</span>오늘 TBM이 완료되었습니다</div>':''}
+      <div class="sm-field"><label>오늘 TBM 주요 내용 (메모)</label>
+        <textarea id="sm-tbm-note" placeholder="작업내용, 위험요인, 참석인원 등 간략히...">${d.tbmNote||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${done
+          ? `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('tbm',true)">내용 수정</button>
+             <button class="btn" style="background:#fff0f0;color:#e03e3e;border-color:#fca5a5" onclick="saveStatDaily('tbm',false)">완료 취소</button>`
+          : `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('tbm',true)">✓ 완료 처리</button>`
+        }
+        <button class="btn" onclick="closeStatModal()">닫기</button>
+      </div>`;
+  } else if(type==='check'){
+    title.textContent='🔍 일일안전점검 — 오늘 현황';
+    const done=d.check;
+    body.innerHTML=`
+      ${done?'<div class="sm-done-banner"><span>✅</span>오늘 일일안전점검이 완료되었습니다</div>':''}
+      <div class="sm-field"><label>점검 메모 (특이사항 등)</label>
+        <textarea id="sm-check-note" placeholder="점검 중 발견된 위험요인, 조치사항 등...">${d.checkNote||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${done
+          ? `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('check',true)">내용 수정</button>
+             <button class="btn" style="background:#fff0f0;color:#e03e3e;border-color:#fca5a5" onclick="saveStatDaily('check',false)">완료 취소</button>`
+          : `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('check',true)">✓ 완료 처리</button>`
+        }
+        <button class="btn" onclick="closeStatModal()">닫기</button>
+      </div>`;
+  } else if(type==='patrol'){
+    title.textContent='🚶 작업장순회점검 — 오늘 현황';
+    const done=d.patrol;
+    body.innerHTML=`
+      ${done?'<div class="sm-done-banner"><span>✅</span>오늘 작업장순회점검이 완료되었습니다</div>':''}
+      <div class="sm-field"><label>순회 메모 (점검 구역, 특이사항)</label>
+        <textarea id="sm-patrol-note" placeholder="점검 구역, 발견된 위험요인, 조치 내용...">${d.patrolNote||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${done
+          ? `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('patrol',true)">내용 수정</button>
+             <button class="btn" style="background:#fff0f0;color:#e03e3e;border-color:#fca5a5" onclick="saveStatDaily('patrol',false)">완료 취소</button>`
+          : `<button class="btn btn-primary" style="flex:1" onclick="saveStatDaily('patrol',true)">✓ 완료 처리</button>`
+        }
+        <button class="btn" onclick="closeStatModal()">닫기</button>
+      </div>`;
+  } else if(type==='accident'){
+    title.textContent='🚨 사고 현황 — 오늘';
+    body.innerHTML=`
+      <div class="alert" style="background:#fff0f0;border-left:4px solid #e03e3e;padding:10px 14px;font-size:12px;color:#991b1b;margin-bottom:14px;border-radius:8px">
+        <b>중대재해 발생 시</b> 즉시 관할 지방고용노동관서 신고 (산안법 제54조)
+      </div>
+      <div class="sm-field"><label>오늘 사고 건수</label>
+        <input type="number" id="sm-acc-count" value="${d.accidentCount||0}" min="0"></div>
+      <div class="sm-field"><label>사고 개요 (없으면 비워두세요)</label>
+        <textarea id="sm-acc-note" placeholder="발생 일시, 장소, 재해자, 경위 등...">${d.accidentNote||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveStatAccident()">저장</button>
+        <button class="btn" onclick="closeStatModal()">취소</button>
+      </div>`;
+  }
+
+  bg.classList.add('show');
+}
+
+function closeStatModal(){
+  document.getElementById('stat-modal-bg').classList.remove('show');
+}
+
+function saveStatPrint(){
+  const d=getDailyData();
+  d.managers=parseInt(document.getElementById('sm-managers').value)||0;
+  d.workers=parseInt(document.getElementById('sm-workers').value)||0;
+  saveDailyData(d);
+  refreshStatBadges();
+  closeStatModal();
+  toast('✅ 인원 현황이 저장되었습니다');
+}
+
+function saveStatDaily(type,done){
+  const d=getDailyData();
+  d[type]=done;
+  const noteMap={tbm:'tbm-note',check:'check-note',patrol:'patrol-note'};
+  const noteEl=document.getElementById('sm-'+noteMap[type]);
+  if(noteEl)d[type+'Note']=noteEl.value;
+  saveDailyData(d);
+  refreshStatBadges();
+  closeStatModal();
+  const labels={tbm:'TBM 일지',check:'일일안전점검',patrol:'작업장순회점검'};
+  toast(done?'✅ '+labels[type]+' 완료 처리되었습니다':'↺ '+labels[type]+' 완료가 취소되었습니다');
+}
+
+function saveStatAccident(){
+  const d=getDailyData();
+  d.accidentCount=parseInt(document.getElementById('sm-acc-count').value)||0;
+  d.accidentNote=document.getElementById('sm-acc-note').value;
+  d.accident=d.accidentCount>0||d.accidentNote.trim().length>0;
+  saveDailyData(d);
+  refreshStatBadges();
+  closeStatModal();
+  toast('✅ 사고 현황이 저장되었습니다');
 }
 
 function toast(msg){let t=document.getElementById('_toast');if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0f1923;color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:Noto Sans KR,sans-serif';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',3200);}
