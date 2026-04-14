@@ -93,6 +93,37 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .s-badge.done{background:#dcfce7;color:#166534}
 .s-badge.todo{background:#f1f5f9;color:#94a3b8}
 
+/* ── TWO COL GRID ── */
+.two-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:700px){.two-col-grid{grid-template-columns:1fr}}
+
+/* 금일 작업현황 */
+.work-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1D9E75,#5DCAA5)}
+.work-card{position:relative;overflow:hidden}
+.ai-result{margin-top:12px;border-radius:var(--radius);overflow:hidden;border:.5px solid var(--border)}
+.ai-section{padding:10px 14px;border-bottom:.5px solid var(--border)}
+.ai-section:last-child{border-bottom:none}
+.ai-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ai-section-title.danger{color:#991b1b}
+.ai-section-title.safe{color:#0F6E56}
+.ai-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--text);margin-bottom:5px;line-height:1.6}
+.ai-item:last-child{margin-bottom:0}
+.ai-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ai-dot.red{background:#e03e3e}
+.ai-dot.green{background:#1D9E75}
+.ai-loading{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
+.ai-loading .spinner{width:24px;height:24px;border:2px solid var(--g4);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px}
+
+/* 안전 KEY POINT */
+.keypoint-card{position:relative;overflow:hidden}
+.keypoint-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#d97706,#f59e0b)}
+.keypoint-display{min-height:120px}
+.kp-empty{font-size:12px;color:var(--light);text-align:center;padding:30px 10px;border:1.5px dashed var(--border);border-radius:var(--radius);cursor:pointer}
+.kp-empty:hover{border-color:var(--g);color:var(--g)}
+.kp-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--radius);background:var(--amber-bg);border:.5px solid #fcd34d;margin-bottom:6px;font-size:13px;color:#92400e;line-height:1.6}
+.kp-item:last-child{margin-bottom:0}
+.kp-num{font-weight:700;font-size:13px;color:#d97706;flex-shrink:0;min-width:18px}
+
 /* ── TOP TWO CARDS ── */
 .top-two-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 @media(max-width:600px){.top-two-grid{grid-template-columns:1fr}}
@@ -597,6 +628,46 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
             </div>
             <div id="sm-body"></div>
           </div>
+        </div>
+
+        <!-- ③ 금일 작업현황 + 안전 KEY POINT -->
+        <div class="two-col-grid">
+
+          <!-- 금일 작업현황 -->
+          <div class="card work-card">
+            <div class="card-head">
+              <h3>🏗️ 금일 작업현황</h3>
+              <span style="font-size:11px;color:var(--muted)">입력하면 AI가 위험요소·안전대책 분석</span>
+            </div>
+            <div class="fg" style="margin-bottom:10px">
+              <label>오늘 작업 내용</label>
+              <textarea id="work-input" rows="3" placeholder="예) 3층 슬래브 콘크리트 타설 작업, 외부비계 설치 등..." oninput="workInputChange()">${''}</textarea>
+            </div>
+            <button class="btn btn-primary" onclick="analyzeWork()" id="analyze-btn" style="width:100%">
+              ✨ AI 위험요소·안전대책 분석
+            </button>
+            <div id="ai-result" class="ai-result" style="display:none"></div>
+          </div>
+
+          <!-- 오늘의 안전 KEY POINT -->
+          <div class="card keypoint-card">
+            <div class="card-head">
+              <h3>🔑 오늘의 안전 KEY POINT</h3>
+              <button class="btn btn-sm" onclick="openKeyPointEdit()">수정 ✏️</button>
+            </div>
+            <div id="keypoint-display" class="keypoint-display">
+              <div class="kp-empty">클릭하여 오늘의 안전 KEY POINT를 입력하세요</div>
+            </div>
+            <!-- 편집 모드 -->
+            <div id="keypoint-edit" style="display:none">
+              <textarea id="keypoint-input" rows="5" placeholder="예)&#10;1. 고소작업 시 안전대 착용 필수&#10;2. 타설 구역 출입통제 철저&#10;3. 보호구 착용 상태 수시 확인"></textarea>
+              <div class="btn-row" style="margin-top:8px">
+                <button class="btn btn-primary" onclick="saveKeyPoint()">저장</button>
+                <button class="btn" onclick="closeKeyPointEdit()">취소</button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- ③ 캘린더 -->
@@ -1324,7 +1395,8 @@ const TODAY_KEY = ()=>'daily_'+new Date().toISOString().split('T')[0];
 function getDailyData(){
   const key=TODAY_KEY();
   const saved=JSON.parse(localStorage.getItem(key)||'null');
-  if(!saved) return {tbm:false,check:false,patrol:false,accident:false,accidentCount:0,accidentNote:'',managers:0,workers:0,tbmNote:'',checkNote:'',patrolNote:''};
+  // 날짜별 키로 저장 → 매일 자동 초기화 (managers/workers 포함)
+  if(!saved) return {tbm:false,check:false,patrol:false,accident:false,accidentCount:0,accidentNote:'',managers:0,workers:0,tbmNote:'',checkNote:'',patrolNote:'',workStatus:'',keyPoint:''};
   return saved;
 }
 
@@ -1338,6 +1410,119 @@ function refreshStatBadges(){
   const wEl=document.getElementById('pr-workers');
   if(mEl)mEl.textContent=d.managers||0;
   if(wEl)wEl.textContent=d.workers||0;
+  // 작업현황·키포인트 복원
+  const wi=document.getElementById('work-input');
+  if(wi&&d.workStatus)wi.value=d.workStatus;
+  renderKeyPoint(d.keyPoint||'');
+  // AI 결과 복원
+  if(d.aiResult){
+    const ar=document.getElementById('ai-result');
+    if(ar){ar.style.display='block';ar.innerHTML=d.aiResult;}
+  }
+}
+
+/* ════════════════════════
+   금일 작업현황 + AI 분석
+   ════════════════════════ */
+function workInputChange(){
+  const d=getDailyData();
+  d.workStatus=document.getElementById('work-input').value;
+  saveDailyData(d);
+}
+
+async function analyzeWork(){
+  const work=document.getElementById('work-input').value.trim();
+  if(!work){toast('⚠️ 작업 내용을 먼저 입력해주세요');return;}
+
+  const ar=document.getElementById('ai-result');
+  const btn=document.getElementById('analyze-btn');
+  ar.style.display='block';
+  ar.innerHTML=`<div class="ai-loading"><div class="spinner"></div>AI가 분석 중입니다...</div>`;
+  btn.disabled=true;btn.textContent='분석 중...';
+
+  try{
+    const site=siteData||{};
+    const prompt=`건설현장 안전관리자입니다. 아래 금일 작업내용을 보고 주요 위험요소 3~5가지와 안전대책 3~5가지를 JSON 형식으로 답해주세요.
+현장명: ${site.name||'건설현장'}
+금일 작업내용: ${work}
+
+반드시 아래 JSON 형식만 반환하세요 (다른 텍스트 없이):
+{"hazards":["위험요소1","위험요소2","위험요소3"],"measures":["안전대책1","안전대책2","안전대책3"]}`;
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content[0].text.trim();
+    const json=JSON.parse(text.replace(/```json|```/g,'').trim());
+
+    const html=`
+      <div class="ai-section" style="background:#fff8f8">
+        <div class="ai-section-title danger">⚠️ 주요 위험요소</div>
+        ${json.hazards.map(h=>`<div class="ai-item"><span class="ai-dot red"></span>${h}</div>`).join('')}
+      </div>
+      <div class="ai-section" style="background:#f0fdf4">
+        <div class="ai-section-title safe">✅ 안전대책</div>
+        ${json.measures.map(m=>`<div class="ai-item"><span class="ai-dot green"></span>${m}</div>`).join('')}
+      </div>`;
+
+    ar.innerHTML=html;
+
+    // 저장
+    const d=getDailyData();
+    d.aiResult=html;
+    saveDailyData(d);
+
+  }catch(e){
+    ar.innerHTML=`<div style="padding:12px;font-size:12px;color:#991b1b">분석 중 오류가 발생했습니다. 다시 시도해주세요.</div>`;
+    console.error(e);
+  }finally{
+    btn.disabled=false;btn.textContent='✨ AI 위험요소·안전대책 분석';
+  }
+}
+
+/* ════════════════════════
+   안전 KEY POINT
+   ════════════════════════ */
+function renderKeyPoint(text){
+  const el=document.getElementById('keypoint-display');
+  if(!el)return;
+  if(!text){
+    el.innerHTML='<div class="kp-empty" onclick="openKeyPointEdit()">클릭하여 오늘의 안전 KEY POINT를 입력하세요</div>';
+    return;
+  }
+  const lines=text.split('\n').filter(l=>l.trim());
+  el.innerHTML=lines.map((l,i)=>`<div class="kp-item"><span class="kp-num">${i+1}</span>${l.replace(/^\d+\.\s*/,'')}</div>`).join('');
+}
+
+function openKeyPointEdit(){
+  const d=getDailyData();
+  const inp=document.getElementById('keypoint-input');
+  if(inp)inp.value=d.keyPoint||'';
+  document.getElementById('keypoint-display').style.display='none';
+  document.getElementById('keypoint-edit').style.display='block';
+  if(inp)inp.focus();
+}
+
+function closeKeyPointEdit(){
+  document.getElementById('keypoint-display').style.display='block';
+  document.getElementById('keypoint-edit').style.display='none';
+}
+
+function saveKeyPoint(){
+  const text=document.getElementById('keypoint-input').value.trim();
+  const d=getDailyData();
+  d.keyPoint=text;
+  saveDailyData(d);
+  renderKeyPoint(text);
+  closeKeyPointEdit();
+  toast('✅ 안전 KEY POINT가 저장되었습니다');
 }
 
 function openStatModal(type){
